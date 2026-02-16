@@ -1,1 +1,36 @@
 
+<!DOCTYPE html>
+<html>
+<head>
+   <title>Chat Lobby</title>
+</head>
+<body>
+   <h2> Join a chat room </h2>
+   <input id="room-name-input" type="text" size=50 placeholder="Enter room name (e.g, sports, coding)"><br><br>
+   <input id="room-name-submit" type= "button" Value="Enter Room">
+   <script>
+      // input field-এ Focus রাখা যাতে ইউজার সরাসরি টাইপ করতে পারে
+      document.querySelector('#room-name-input').focus();
+
+      // এন্টার বাটন প্রেস করলেও যাতে সাবমিট হয়
+      document.querySelector('#room-name-input').onkeyup() = function(e) {
+         if (e.keycode === 13){
+            document.querySelector('#room-name-submit').click();
+         }
+      };
+
+      document.querySelector('#room-name-submit').onclick = function(e){
+         var roomName = document.querySelector('#room-name-input').value();
+         if (roomname) {
+            // ইউজারকে ডাইনামিকভাবে চ্যাট রুমের URL-এ পাঠিয়ে দেবে
+            window.location.pathname = '/chat/' + roomName + '/';
+         } else {
+            alert("Please enter a room name!");
+         }
+      };
+   </script>
+</body>
+</html>
+
+
+
