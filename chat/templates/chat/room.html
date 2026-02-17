@@ -17,12 +17,12 @@
 
       // 1. Establishing WebSocket Connection
       const chatSocket = new WebSocket(
-         'ws//' + window.location.host + 'ws/chat/' + roomName + '/'
+         'ws://' + window.location.host + '/ws/chat/' + roomName + '/'
       );
 
       // 2. Receiving Messages From Server
       chatSocket.onmessage = function(e){
-         const data = JSON.Parse(e.data);
+         const data = JSON.parse(e.data);
          document.querySelector('#chat-log').value += (data.message + '\n');
 
          // auto scorll to the bottom
@@ -37,14 +37,14 @@
 
       document.querySelector('#chat-message-input').focus();
       document.querySelector('#chat-message-input').onkeyup= function(e){
-         if (e.keycode === 13){
+         if (e.keyCode === 13){
             document.querySelector('chat-message-submit').click();
          }
       }
 
       // 4. Sending messages to Server
       document.querySelector('#chat-message-submit').onclick= function(e){
-         const messageInputDom = document.querySelctor('#chat-message-input');
+         const messageInputDom = document.querySelector('#chat-message-input');
          const message = messageInputDom.value;
          if (message.trim() !== ""){
             chatSocket.send(JSON.stringify({
