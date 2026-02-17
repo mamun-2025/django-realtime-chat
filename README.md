@@ -12,6 +12,7 @@ Currently, the core backend infrastructure is completed:
 - [x] **WebSocket Routing** Implemented Dynamic URL routing in `routing.py` to capture room names using regular expressions.
 - [x] **ASYNC Consumers** Developed `ChatConsumer` in `consumers.py` to manage connection logic, room groups and real-time message broadcasting.
 - [x] **Views & Templates** Lobby and Dynamic Chat Room views implemented.
+- [x] **URLs Configuration** Mapped landing page & dynamic room URLs.
 
 --- 
 
