@@ -20,7 +20,7 @@
       };
 
       document.querySelector('#room-name-submit').onclick = function(e){
-         var roomName = document.querySelector('#room-name-input').value();
+         var roomName = document.querySelector('#room-name-input').value;
          if (roomname) {
             // ইউজারকে ডাইনামিকভাবে চ্যাট রুমের URL-এ পাঠিয়ে দেবে
             window.location.pathname = '/chat/' + roomName + '/';
