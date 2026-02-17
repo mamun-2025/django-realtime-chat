@@ -45,7 +45,7 @@
       // 4. Sending messages to Server
       document.querySelector('#chat-message-submit').onclick= function(e){
          const messageInputDom = document.querySelctor('#chat-message-input');
-         const message = messageInputDom.value();
+         const message = messageInputDom.value;
          if (message.trim() !== ""){
             chatSocket.send(JSON.stringify({
                'message': message
