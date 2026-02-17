@@ -13,7 +13,7 @@
       document.querySelector('#room-name-input').focus();
 
       // এন্টার বাটন প্রেস করলেও যাতে সাবমিট হয়
-      document.querySelector('#room-name-input').onkeyup() = function(e) {
+      document.querySelector('#room-name-input').onkeyup = function(e) {
          if (e.keycode === 13){
             document.querySelector('#room-name-submit').click();
          }
