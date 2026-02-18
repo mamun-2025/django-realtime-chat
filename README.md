@@ -4,7 +4,7 @@ A professional real-time communication engine built using **Django Channels** an
 
 ---
 
-## 🚀 Current Implementation (Milestone 1)
+## 🚀 Current Implementation (Milestone 1&2)
 
 Currently, the core backend infrastructure is completed:
 
@@ -13,6 +13,9 @@ Currently, the core backend infrastructure is completed:
 - [x] **ASYNC Consumers** Developed `ChatConsumer` in `consumers.py` to manage connection logic, room groups and real-time message broadcasting.
 - [x] **Views & Templates** Lobby and Dynamic Chat Room views implemented.
 - [x] **URLs Configuration** Mapped landing page & dynamic room URLs.
+- [x] **Dockerized Redis Broker** Successfully deployed `Redis` using Docker to manage real-time message brokering.
+- [x] **Daphne Integration** Using `Daphne` as the primary ASGI server for full-duplex communication. 
+- [x] **Frontend Integration** Fully functional JavaScript WebSocket API implemented for real-time messaging without refresh.
 
 --- 
 
@@ -39,16 +42,19 @@ Currently, the core backend infrastructure is completed:
    ```bash
    git clone [https://github.com/mamun-2025/django-realtime-chat.git]
 
-2. Install Dependencies:
-pip install django channels chennels-redis
+2. Run Redis (Docker):
+docker run --name my-chat-redis -p 6379:6379 -d redis
 
-3. Run Server
+3. Install Dependencies:
+pip install django daphne channels chennels-redis
+
+4. Run Server
 python manage.py runserver
 
 ---
 
 ## 🛠️ Upcoming Features
-- [ ] Frontend integration with JavaScript WebSocket API.
+- [x]~~ Frontend integration with JavaScript WebSocket API.~~(Completed)
 
 - [ ] Storing chat history in the database.
 
