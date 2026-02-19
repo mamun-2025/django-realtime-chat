@@ -49,19 +49,23 @@ The porject has evolved from a basic broadcaster to a persistent chat system:
 1. **clone the repo:**
    ```bash
    git clone [https://github.com/mamun-2025/django-realtime-chat.git]
+   cd my_chat_app
 
 2. Run Redis (Docker):
-docker run --name my-chat-redis -p 6379:6379 -d redis
+    docker run --name my-chat-redis -p 6379:6379 -d redis
 
 3. Install Dependencies:
-pip install django daphne channels chennels-redis
+    pip install django daphne channels channels-redis
 
 4. Apply Migrations:
-python manage.py makemigrations
-python manage.py migrate
+    python manage.py makemigrations
+    python manage.py migrate
+
+1. Create a superuser to access the admin panel:
+   python manage.py createsuperuser
 
 5. Run Server
-python manage.py runserver
+   python manage.py runserver
 
 ---
 
