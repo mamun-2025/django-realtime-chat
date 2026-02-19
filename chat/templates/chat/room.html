@@ -11,9 +11,12 @@
          padding: 15px;
          background-color: #fcfcfc;
          display: flex;
-         flex-direction: 8px;
+         flex-direction: column;
          border-radius: 8px;
          box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
+         gap: 10px;
+         align-items: flex-start;
+         scroll-behavior: smooth;
       }
       .message {
          margin-bottom: 12px;
@@ -23,6 +26,8 @@
          box-shadow: 0 1px 2px rgba(0,0,0,0.1);
          width: fit-content;
          max-width: 80%;
+         word-wrap: break-word;
+         max-width: 85%;
       }
       .username {
          font-weight: bold;
@@ -58,7 +63,7 @@
       {% for msg in messages %}
          <div class="message">
             <span class="username"> {{ msg.user.username }}</span>
-            <span class="content"> {{ msg.username}}</span>
+            <span class="content"> {{ msg.content}}</span>
          </div>
       {% endfor %}
    </div>
@@ -83,9 +88,9 @@
       // 2. Receiving Messages From Server
       chatSocket.onmessage = function(e){
          const data = JSON.parse(e.data);
-         const chatlog = document.querySelector('#chat-log');
+         const chatLog = document.querySelector('#chat-log');
 
-         const messageDiv = document.CreateElement('div');
+         const messageDiv = document.createElement('div');
          messageDiv.classList.add('message');
          messageDiv.innerHTML = `
          <span class="username">${data.username}</span>
@@ -93,7 +98,7 @@
          `
          chatLog.appendChild(messageDiv);
 
-         chatlog.scrollTop = chatlog.scrollHeight;
+         chatLog.scrollTop = chatLog.scrollHeight;
       };
 
       // 3. Handling Connection Clousers
