@@ -1,38 +1,46 @@
 
 # 💬 Django Real-Time Chat Engine
-A professional real-time communication engine built using **Django Channels** and **Websocket**.This project implements an asynchronous backend architecture to handle live messaging across diffirent chat rooms.
+A professional real-time communication engine built using **Django Channels**, **Websocket** and **Django ORM**.This project implements an asynchronous backend architecture to handle live messaging with parmanent data persistence.
 
 ---
 
-## 🚀 Current Implementation (Milestone 1&2)
+## 🚀 Current Implementation (Milestone 1, 2 & 3)
 
-Currently, the core backend infrastructure is completed:
+The porject has evolved from a basic broadcaster to a persistent chat system:
 
 - [x] **ASGI Configaration:** Configuared `asgi.py` to handle both Http and WebSockets Protocols using `ProtocolTypeRouter`.
-- [x] **WebSocket Routing** Implemented Dynamic URL routing in `routing.py` to capture room names using regular expressions.
-- [x] **ASYNC Consumers** Developed `ChatConsumer` in `consumers.py` to manage connection logic, room groups and real-time message broadcasting.
-- [x] **Views & Templates** Lobby and Dynamic Chat Room views implemented.
-- [x] **URLs Configuration** Mapped landing page & dynamic room URLs.
-- [x] **Dockerized Redis Broker** Successfully deployed `Redis` using Docker to manage real-time message brokering.
-- [x] **Daphne Integration** Using `Daphne` as the primary ASGI server for full-duplex communication. 
-- [x] **Frontend Integration** Fully functional JavaScript WebSocket API implemented for real-time messaging without refresh.
+- [x] **WebSocket Routing:** Implemented Dynamic URL routing in `routing.py` to capture room names using regular expressions.
+- [x] **ASYNC Consumers:** Developed `ChatConsumer` in `consumers.py` to manage connection logic, room groups and real-time message broadcasting.
+- [x] **Views & Templates:** Lobby and Dynamic Chat Room views implemented.
+- [x] **URLs Configuration:** Mapped landing page & dynamic room URLs.
+- [x] **Dockerized Redis Broker:** Successfully deployed `Redis` using Docker to manage real-time message brokering.
+- [x] **Daphne Integration:** Using `Daphne` as the primary ASGI server for full-duplex communication. 
+- [x] **Frontend Integration:** Fully functional JavaScript WebSocket API implemented for real-time messaging without refresh.
+- [x] **Database Persistence (New):** Integrated `Message` model to store chat parmanently in the database.
+- [x] **Thread-Safe DB Operations:** Used `@database sync_to_async` to handle synchronous Django ORM inside async consumers.
+- [x] **Chat History Rendering:** Automated fetching of the last 50 messages upon joining a room via `views.py`.
+
 
 --- 
 
 ## 🛠️ Technical Workflow
 
-1. **HandShake** The client initiates a WebSocket connection to `ws/chat/ROOM_NAME/`.
-2. **Routing** `routing.py` identifies the URL and maps it to the `ChatConsumer`.
-3. **Channel Layers** Uses Redis/Channel Layers to bridge communication between different users in the same room. 
-4. **Asynchronous Handling** All operations are non-blocking (Async), ensuring high scalability.
+1. **HandShake:** The client initiates a WebSocket connection to `ws/chat/ROOM_NAME/`.
+2. **Routing:** `routing.py` identifies the URL and maps it to the `ChatConsumer`.
+3. **Channel Layers:** Uses Redis/Channel Layers to bridge communication between different users in the same room. 
+4. **Asynchronous Handling:** All operations are non-blocking (Async), ensuring high scalability.
+5. **Persistent Storage:** Upon receiving a message, the consumer saves it to the database asynchronously before broadcasting.
+6. **History Retrieval:** When a user enters a room, the view layer queries the Database to render the chat history.
 
 --- 
 
 ## 📂 Project Structure (core files)
 
 - `asgi.py`: The entry point for ASGI-compitable web-servers.
-- `consumers.py`: Handles the server-side logic (Connect, Receive, Broadcast)
-- `routing.py`: WebSocket equivalent of `urls.py`
+- `consumers.py`: Handles the server-side logic (Connect, Receive, Broadcast).
+- `routing.py`: WebSocket equivalent of `urls.py`.
+- `views.py`: Handles initial page rendering and **History Fetching**.
+- `models.py`: Defines the `Message` schema.
 
 --- 
 
@@ -48,7 +56,11 @@ docker run --name my-chat-redis -p 6379:6379 -d redis
 3. Install Dependencies:
 pip install django daphne channels chennels-redis
 
-4. Run Server
+4. Apply Migrations:
+python manage.py makemigrations
+python manage.py migrate
+
+5. Run Server
 python manage.py runserver
 
 ---
@@ -56,9 +68,13 @@ python manage.py runserver
 ## 🛠️ Upcoming Features
 - [x]~~ Frontend integration with JavaScript WebSocket API.~~(Completed)
 
-- [ ] Storing chat history in the database.
+- [x]~~ Storing chat history in the database.~~(Completed)
 
-- [ ] User authentication and private messaging.
+[ ] User authentication and Private Messaging (1-to-1).
+
+[ ] Online/Offline presence indicators.
+
+[ ] Image/File sharing capability.
 
 ---
 

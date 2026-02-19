@@ -2,15 +2,75 @@
 <!DOCTYPE html>
 <html>
 <head>
-   <title> Chat Room </title>
+   <title> Chat Room - {{ room_name }}</title>
+   <style>
+      #chat-log {
+         height:450px;
+         overflow-y: auto;
+         border: 1px solid #ddd;
+         padding: 15px;
+         background-color: #fcfcfc;
+         display: flex;
+         flex-direction: 8px;
+         border-radius: 8px;
+         box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
+      }
+      .message {
+         margin-bottom: 12px;
+         padding: 8px 12px;
+         background: #fff;
+         border-radius: 5px;
+         box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+         width: fit-content;
+         max-width: 80%;
+      }
+      .username {
+         font-weight: bold;
+         color: #2c3e50;
+         display: block;
+         font-size: 0.85em;
+         margin-bottom: 3px;
+      }
+      .content {
+         color: #34495e;
+      }
+      # chat-message-input {
+         width: 80%;
+         padding: 10px;
+         border: 1px solid #ccc;
+         border-radius: 4px;
+         margin-top: 10px;
+      }
+      # chat-message-submit {
+         padding: 10px 20px;
+         background-color: #27ae60;
+         color: white;
+         border: none;
+         border-radius: 4px;
+         cursor: pointer;
+      }
+   </style>
 </head>
 <body>
-   <h2 id="room-title">Room: {{ room_name }}</h2>
-   <textarea id="chat-log" cols="100" rows="20" readonly style= "background: #f9f9f9; border: 1px solid #ccc; padding: 10px;"></textarea><br><br>
+   <h2>Room: {{ room_name }}</h2>
+  
+   <div id="chat-log">
+      {% for msg in messages %}
+         <div class="message">
+            <span class="username"> {{ msg.user.username }}</span>
+            <span class="content"> {{ msg.username}}</span>
+         </div>
+      {% endfor %}
+   </div>
+
    <input id="chat-message-input" type="text" size="100" placeholder= "Type your message here...."><br><br>
    <input id="chat-message-submit" type="button" value="Send Message">
 
    {{ room_name|json_script:"room-name" }} 
+
+
+
+
 
    <script>
       const roomName = JSON.parse(document.getElementById('room-name').textContent);
@@ -23,10 +83,16 @@
       // 2. Receiving Messages From Server
       chatSocket.onmessage = function(e){
          const data = JSON.parse(e.data);
-         document.querySelector('#chat-log').value += (data.message + '\n');
-
-         // auto scorll to the bottom
          const chatlog = document.querySelector('#chat-log');
+
+         const messageDiv = document.CreateElement('div');
+         messageDiv.classList.add('message');
+         messageDiv.innerHTML = `
+         <span class="username">${data.username}</span>
+         <span class="content">${data.message}</span>
+         `
+         chatLog.appendChild(messageDiv);
+
          chatlog.scrollTop = chatlog.scrollHeight;
       };
 
