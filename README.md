@@ -21,6 +21,8 @@ The porject has evolved from a basic broadcaster to a persistent chat system:
 - [x] **User Authentication (New):** Built-in Signup, Login, and Logout functionality using Django's Auth system.
 - [x] **Access Control:** Restricted chat rooms to authenticated users only using @login_required decorators and LoginRequiredMixin.
 - [x] **Template Inheritance:** Optimized UI with base.html and Django template blocks.
+- [x] **Smart Chat UI:** Implemented dynamic left/right message alignment with color coding (Blue for self, Red for others).
+- [x] **Improved UX:** Added auto-scroll, "Enter" key support, and real-time message identification for a better chat experience.
 
 --- 
 

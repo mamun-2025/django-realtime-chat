@@ -6,6 +6,15 @@
     /* আপনার দেওয়া CSS গুলো এখানে বসবে */
     #chat-log { height:450px; overflow-y: auto; border: 1px solid #ddd; padding: 15px; background-color: #fcfcfc; display: flex; flex-direction: column; gap: 10px; border-radius: 8px; }
     .message { padding: 8px 12px; background: #fff; border-radius: 5px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); width: fit-content; max-width: 85%; word-wrap: break-word; }
+
+    .message.me { align-self: flex-end; background-color: #5887ff; border-bottom-right-radius: 2px; }
+    .message.me .username { color: #e0e0e0; }
+    .message.me .content { color: white; }
+
+    .message.other { align-self: flex-start; background-color: #fd6666; border-bottom-left-radius: 2px; }
+    .message.other .username { color: #ffe0e0; }
+    .message.other .content { color: white; }
+    
     .username { font-weight: bold; color: #2c3e50; display: block; font-size: 0.85em; }
     .content { color: #34495e; }
 {% endblock %}
@@ -14,7 +23,7 @@
     <h2>Room: {{ room_name }}</h2>
     <div id="chat-log">
         {% for msg in messages %}
-            <div class="message">
+            <div class="message {% if msg.user == request.user %}me{% else %}other{% endif %}">
                 <span class="username">{{ msg.user.username }}</span>
                 <span class="content">{{ msg.content }}</span>
             </div>
@@ -33,8 +42,18 @@
         chatSocket.onmessage = function(e){
             const data = JSON.parse(e.data);
             const chatLog = document.querySelector('#chat-log');
+
+            const currentUser = "{{ request.user.username }}";
+
             const messageDiv = document.createElement('div');
             messageDiv.classList.add('message');
+
+            if (data.username === currentUser){
+                messageDiv.classList.add('me');
+            } else {
+                messageDiv.classList.add('other');
+            }
+            
             messageDiv.innerHTML = `<span class="username">${data.username}</span><span class="content">${data.message}</span>`;
             chatLog.appendChild(messageDiv);
             chatLog.scrollTop = chatLog.scrollHeight;
