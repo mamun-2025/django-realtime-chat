@@ -1,0 +1,30 @@
+
+{% extends 'chat/base.html' %}
+
+{% block title %}Login - Chat Engine{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-box { width: 350px; margin: 50px auto; padding: 30px; border: 1px solid #ddd; border-radius: 12px; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    .auth-box h2 { text-align: center; color: #2980b9; margin-top: 0; }
+    .auth-box form p { margin-bottom: 15px; display: flex; flex-direction: column; }
+    .auth-box input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-top: 5px; }
+    .auth-box button { width: 100%; padding: 12px; background: #2980b9; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; }
+    .auth-link { text-align: center; margin-top: 20px; font-size: 0.95em; }
+    .errorlist { color: #e74c3c; font-size: 0.85em; list-style: none; padding: 0; margin-bottom: 10px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-box">
+    <h2>Login</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Login</button>
+    </form>
+    <div class="auth-link">
+        New here? <a href="{% url 'signup' %}">Create an account</a>
+    </div>
+</div>
+{% endblock %}

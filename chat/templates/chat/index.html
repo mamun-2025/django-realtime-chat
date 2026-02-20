@@ -1,36 +1,22 @@
 
-<!DOCTYPE html>
-<html>
-<head>
-   <title>Chat Lobby</title>
-</head>
-<body>
-   <h2> Join a chat room </h2>
-   <input id="room-name-input" type="text" size=50 placeholder="Enter room name (e.g, sports, coding)"><br><br>
-   <input id="room-name-submit" type= "button" value="Enter-Room">
-   <script>
-      // input field-এ Focus রাখা যাতে ইউজার সরাসরি টাইপ করতে পারে
-      document.querySelector('#room-name-input').focus();
+{% extends 'chat/base.html' %}
+{% block title %}Chat Lobby{% endblock %}
 
-      // এন্টার বাটন প্রেস করলেও যাতে সাবমিট হয়
-      document.querySelector('#room-name-input').onkeyup = function(e) {
-         if (e.keyCode === 13){
-            document.querySelector('#room-name-submit').click();
-         }
-      };
+{% block content %}
+    <h2>Join a chat room</h2>
+    <input id="room-name-input" type="text" style="width: 70%; padding: 10px;" placeholder="Enter room name (e.g, sports, coding)">
+    <input id="room-name-submit" type="button" value="Enter Room" style="padding: 10px 20px; background: #2980b9; color: white; border: none; cursor: pointer; border-radius: 5px;">
 
-      document.querySelector('#room-name-submit').onclick = function(e){
-         var roomName = document.querySelector('#room-name-input').value;
-         if (roomName) {
-            // ইউজারকে ডাইনামিকভাবে চ্যাট রুমের URL-এ পাঠিয়ে দেবে
-            window.location.pathname = '/chat/' + roomName + '/';
-         } else {
-            alert("Please enter a room name!");
-         }
-      };
-   </script>
-</body>
-</html>
-
-
+    <script>
+        document.querySelector('#room-name-input').focus();
+        document.querySelector('#room-name-input').onkeyup = function(e) {
+            if (e.keyCode === 13) document.querySelector('#room-name-submit').click();
+        };
+        document.querySelector('#room-name-submit').onclick = function(e){
+            var roomName = document.querySelector('#room-name-input').value;
+            if (roomName) window.location.pathname = '/chat/' + roomName + '/';
+            else alert("Please enter a room name!");
+        };
+    </script>
+{% endblock %}
 

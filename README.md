@@ -4,14 +4,13 @@ A professional real-time communication engine built using **Django Channels**, *
 
 ---
 
-## 🚀 Current Implementation (Milestone 1, 2 & 3)
+## 🚀 Current Implementation (Milestone 1, 2, 3 & 4)
 
 The porject has evolved from a basic broadcaster to a persistent chat system:
 
 - [x] **ASGI Configaration:** Configuared `asgi.py` to handle both Http and WebSockets Protocols using `ProtocolTypeRouter`.
 - [x] **WebSocket Routing:** Implemented Dynamic URL routing in `routing.py` to capture room names using regular expressions.
 - [x] **ASYNC Consumers:** Developed `ChatConsumer` in `consumers.py` to manage connection logic, room groups and real-time message broadcasting.
-- [x] **Views & Templates:** Lobby and Dynamic Chat Room views implemented.
 - [x] **URLs Configuration:** Mapped landing page & dynamic room URLs.
 - [x] **Dockerized Redis Broker:** Successfully deployed `Redis` using Docker to manage real-time message brokering.
 - [x] **Daphne Integration:** Using `Daphne` as the primary ASGI server for full-duplex communication. 
@@ -19,18 +18,27 @@ The porject has evolved from a basic broadcaster to a persistent chat system:
 - [x] **Database Persistence (New):** Integrated `Message` model to store chat parmanently in the database.
 - [x] **Thread-Safe DB Operations:** Used `@database sync_to_async` to handle synchronous Django ORM inside async consumers.
 - [x] **Chat History Rendering:** Automated fetching of the last 50 messages upon joining a room via `views.py`.
-
+- [x] **User Authentication (New):** Built-in Signup, Login, and Logout functionality using Django's Auth system.
+- [x] **Access Control:** Restricted chat rooms to authenticated users only using @login_required decorators and LoginRequiredMixin.
+- [x] **Template Inheritance:** Optimized UI with base.html and Django template blocks.
 
 --- 
 
-## 🛠️ Technical Workflow
+## 🛠️ Technical Workflow & Security
 
-1. **HandShake:** The client initiates a WebSocket connection to `ws/chat/ROOM_NAME/`.
-2. **Routing:** `routing.py` identifies the URL and maps it to the `ChatConsumer`.
-3. **Channel Layers:** Uses Redis/Channel Layers to bridge communication between different users in the same room. 
-4. **Asynchronous Handling:** All operations are non-blocking (Async), ensuring high scalability.
-5. **Persistent Storage:** Upon receiving a message, the consumer saves it to the database asynchronously before broadcasting.
-6. **History Retrieval:** When a user enters a room, the view layer queries the Database to render the chat history.
+1. Real-time Communication:
+    1. **HandShake:** The client initiates a WebSocket connection to `ws/chat/ROOM_NAME/`.
+    2. **Routing:** `routing.py` identifies the URL and maps it to the `ChatConsumer`.
+    3. **Channel Layers:** Uses Redis/Channel Layers to bridge communication between different users in the same room. 
+    4. **Asynchronous Handling:** All operations are non-blocking (Async), ensuring high scalability.
+    5. **Persistent Storage:** Upon receiving a message, the consumer saves it to the database asynchronously before broadcasting.
+    6. **History Retrieval:** When a user enters a room, the view layer queries the Database to render the chat history.
+
+2. User Authentication & Access Control:
+    7. **Secure Registration:** New users register through a secure UserCreationForm.
+    8. **Session Management:** Django's LoginView handles credential verification and session creation.
+    9. **Guard (Protected Access):** The @login_required decorator acts as a middleware to ensure unauthenticated users are redirected to the login page.
+    10. **Identity Persistence:** Messages are now linked to the User model, ensuring every message has an owner (no more "Anonymous").
 
 --- 
 
@@ -41,6 +49,7 @@ The porject has evolved from a basic broadcaster to a persistent chat system:
 - `routing.py`: WebSocket equivalent of `urls.py`.
 - `views.py`: Handles initial page rendering and **History Fetching**.
 - `models.py`: Defines the `Message` schema.
+- `templates/chat/`:Contains `base.html`, `index.html`, `room.html`, `signup.html` and `login.html`. 
 
 --- 
 
@@ -74,11 +83,13 @@ The porject has evolved from a basic broadcaster to a persistent chat system:
 
 - [x]~~ Storing chat history in the database.~~(Completed)
 
-[ ] User authentication and Private Messaging (1-to-1).
+[ ] Private Messaging (1-to-1).
 
 [ ] Online/Offline presence indicators.
 
 [ ] Image/File sharing capability.
+
+[ ] Real-time typing indicators.
 
 ---
 
