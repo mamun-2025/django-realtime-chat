@@ -23,6 +23,7 @@ The porject has evolved from a basic broadcaster to a persistent chat system:
 - [x] **Template Inheritance:** Optimized UI with base.html and Django template blocks.
 - [x] **Smart Chat UI:** Implemented dynamic left/right message alignment with color coding (Blue for self, Red for others).
 - [x] **Improved UX:** Added auto-scroll, "Enter" key support, and real-time message identification for a better chat experience.
+- [x] **Message Timestamps:** Integrated real-time timestamps (e.g., 10:30 PM) using Django filters and JavaScript for a professional chat experience.
 
 --- 
 

@@ -3,6 +3,7 @@ from channels.db import database_sync_to_async
 from .models import Message
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
+import datetime
 
 class ChatConsumer(AsyncWebsocketConsumer):
    async def connect(self):
@@ -26,6 +27,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
       message = text_data_json['message']
 
       user = self.scope['user']
+      time_now = datetime.datetime.now().strftime('%I:%M %p')
+
       username = user.username if user.is_authenticated else 'Anonymous'
 
       if user.is_authenticated:
@@ -36,17 +39,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
          {
             'type': 'chat_message',
             'message': message,
-            'username': username
+            'username': username,
+            'timestamp': time_now,
          }
       )
 
    async def chat_message(self, event):
       message = event['message']
       username = event['username']
+      timestamp = event['timestamp']
 
       await self.send(text_data=json.dumps({
          'message': message,
-         'username': username                                               
+         'username': username,
+         'timestamp': timestamp                                      
       }))
 
    @database_sync_to_async
