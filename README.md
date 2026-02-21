@@ -24,6 +24,8 @@ The porject has evolved from a basic broadcaster to a persistent chat system:
 - [x] **Smart Chat UI:** Implemented dynamic left/right message alignment with color coding (Blue for self, Red for others).
 - [x] **Improved UX:** Added auto-scroll, "Enter" key support, and real-time message identification for a better chat experience.
 - [x] **Message Timestamps:** Integrated real-time timestamps (e.g., 10:30 PM) using Django filters and JavaScript for a professional chat experience.
+- [x] **Online Presence:** Real-time tracking and display of active users in the chat room using Django Channel Layers.
+- [x] **Typing Indicator:** Live Visual Feedback ("User is typing...") when participants are composing in messages.
 
 --- 
 
