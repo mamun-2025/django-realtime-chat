@@ -28,6 +28,12 @@ The porject has evolved from a basic broadcaster to a persistent chat system:
 - [x] **Typing Indicator:** Live Visual Feedback ("User is typing...") when participants are composing in messages.
 - [x] **Message Seen/Unseen Status:** Real-time double-tick (✓✓) system that indicates when a message has been read by the recipient.
 
+## 🚀 Milestone 5: Multimedia Support & Advanced UX
+This update focuses on rich media sharing and imporving the overall user experience.
+- [x] **Asynchronous Image Sharing:** Users can now send images instantly. Files are processed using Base64 encoding with unique UUIDs to prevent filename conflicts.
+- [x] **Media persistence:** Integrated database logic to ensure all shared images are saved and remain visible even after refreshing the page.
+- [x] **Smart Hyperlinks:** "URL detection" feature that automatically identifies website links in text and ocnverts them into clickable tags.
+- [x] **Interactive Media UI:** Enhanced the that interfce with image previews. Users can now click on any shared photo to view it in full size in a new tab.
 
 --- 
 
@@ -94,9 +100,11 @@ The porject has evolved from a basic broadcaster to a persistent chat system:
 
 - [x] Real-time typing indicators.
 
-[ ] Image/File sharing capability.
+- [x] Image/File sharing capability.
 
 [ ] Private Messaging (1-to-1).
+
+[ ] Audio/Voice Message Recording.
 
 ---
 

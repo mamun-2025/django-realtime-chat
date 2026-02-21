@@ -4,6 +4,9 @@ from .models import Message
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 import datetime
+import base64
+import uuid
+from django.core.files.base import ContentFile
 
 class ChatConsumer(AsyncWebsocketConsumer):
 
@@ -42,50 +45,74 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 
    async def receive(self, text_data):
-      text_data_json = json.loads(text_data)
+        text_data_json = json.loads(text_data)
+        
+        # শুরুতেই ইউজারনেম এবং সময় ডিফাইন করে নিন
+        user = self.scope['user']
+        username = user.username if user.is_authenticated else 'Anonymous'
+        time_now = datetime.datetime.now().strftime('%I:%M %p')
 
-      if text_data_json.get('type') == 'message_read':
-         msg_id = text_data_json.get('message_id')
-         await self.mark_message_as_read(msg_id)
-         await self.channel_layer.group_send(
-            self.room_group_name, {
-               'type': 'message_read_update',
-               'message_id': msg_id
-            }
-         )
-         return
+        # ১. ইমেজ/ফাইল হ্যান্ডলিং
+        if text_data_json.get('type') == 'file':
+            file_data = text_data_json.get('file_data')
+            file_name = text_data_json.get('file_name')
 
+            format, imgstr = file_data.split(';base64,')
+            ext = file_name.split('.')[-1]
+            actual_file = ContentFile(base64.b64decode(imgstr), name=f"{uuid.uuid4()}.{ext}")
 
-      if text_data_json.get('type') == 'typing':
-         await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-               'type': 'typing_status',
-               'username': self.scope['user'].username
-            }
-         )
-         return
-   
-      message = text_data_json['message']
-      user = self.scope['user']
-      time_now = datetime.datetime.now().strftime('%I:%M %p')
-      username = user.username if user.is_authenticated else 'Anonymous'
+            # এখন 'username' ভেরিয়েবলটি উপরে ডিফাইন করা আছে, তাই এরর দেবে না
+            msg_obj = await self.save_message(username, self.room_name, "", actual_file)
 
-      msg_id = None
-      if user.is_authenticated:
-         msg_obj = await self.save_message(username, self.room_name, message)
-         msg_id = msg_obj.id
+            await self.channel_layer.group_send(
+                self.room_group_name, {
+                    'type': 'chat_message',
+                    'message': '',
+                    'username': username,
+                    'image_url': msg_obj.image.url,
+                    'timestamp': time_now,
+                    'message_id': msg_obj.id
+                }
+            )
+            return
 
-      await self.channel_layer.group_send(
-         self.room_group_name,
-         {
-            'type': 'chat_message',
-            'message': message,
-            'username': username,
-            'timestamp': time_now,
-            'message_id': msg_obj.id
-         }
-      )
+        # ২. রিড সিগন্যাল হ্যান্ডলিং
+        if text_data_json.get('type') == 'message_read':
+            msg_id = text_data_json.get('message_id')
+            await self.mark_message_as_read(msg_id)
+            await self.channel_layer.group_send(
+                self.room_group_name, {
+                    'type': 'message_read_update',
+                    'message_id': msg_id
+                }
+            )
+            return
+
+        # ৩. টাইপিং হ্যান্ডলিং
+        if text_data_json.get('type') == 'typing':
+            await self.channel_layer.group_send(
+                self.room_group_name, {
+                    'type': 'typing_status',
+                    'username': username
+                }
+            )
+            return
+
+        # ৪. সাধারণ টেক্সট মেসেজ হ্যান্ডলিং
+        if 'message' in text_data_json:
+            message = text_data_json['message']
+            msg_obj = await self.save_message(username, self.room_name, message)
+
+            await self.channel_layer.group_send(
+                self.room_group_name, {
+                    'type': 'chat_message',
+                    'message': message,
+                    'username': username,
+                    'timestamp': time_now,
+                    'message_id': msg_obj.id,
+                    'image_url': None
+                }
+            )
 
 
    async def typing_status(self, event):
@@ -101,12 +128,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
       username = event['username']
       timestamp = event['timestamp']
       message_id = event.get('message_id')
+      image_url = event.get('image_url')
 
       await self.send(text_data=json.dumps({
          'message': message,
          'username': username,
          'timestamp': timestamp,
          'message_id': message_id,
+         'image_url': image_url,
          'type': 'chat_message'
 
       }))
@@ -133,10 +162,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
       }))
 
    @database_sync_to_async
-   def save_message(self, username, room, message):
+   def save_message(self, username, room, message, image_file=None):
       from django.contrib.auth.models import User
       user = User.objects.get(username=username)
-      return Message.objects.create(user=user, room_name= room, content=message)
+      return Message.objects.create(
+         user=user, 
+         room_name= room,  
+         content=message,
+         image= image_file
+         )
 
    @database_sync_to_async
    def mark_message_as_read(self, msg_id):
