@@ -6,13 +6,15 @@
     #chat-log { height:450px; overflow-y: auto; border: 1px solid #ddd; padding: 15px; background-color: #fcfcfc; display: flex; flex-direction: column; gap: 10px; border-radius: 8px; }
     .message { padding: 8px 12px; background: #fff; border-radius: 5px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); width: fit-content; max-width: 85%; word-wrap: break-word; }
 
-    .message.me { align-self: flex-end; background-color: #5887ff; border-bottom-right-radius: 2px; color: white; }
+    .message.me { align-self: flex-end; background-color: #81000f; border-bottom-right-radius: 2px; color: white; }
     .message.me .username { color: #e0e0e0; }
     .message.me .content { color: white; }
 
-    .message.other { align-self: flex-start; background-color: #fd6666; border-bottom-left-radius: 2px; color: white; }
+    .message.other { align-self: flex-start; background-color: #050027; border-bottom-left-radius: 2px; color: white; }
     .message.other .username { color: #ffe0e0; }
     .message.other .content { color: white; }
+
+    .tick { font-size: 0.9em; margin-left: 5px; color: #aaa; }
     
     .username { font-weight: bold; display: block; font-size: 0.85em; }
     .timestamp { font-size: 0.7em; display: block; margin-top: 5px; opacity: 0.8; text-align: right; }
@@ -56,6 +58,7 @@
 
         chatSocket.onmessage = function(e){
             const data = JSON.parse(e.data);
+            const currentUser = "{{ request.user.username }}";
 
             // ১. টাইপিং ইন্ডিকেটর
             if (data.type === 'typing' && data.username !== "{{ request.user.username }}"){
@@ -81,25 +84,42 @@
             }
             
             // ৩. চ্যাট মেসেজ
-            if (data.message){
+            if (data.message || data.type === 'chat_message'){
             const chatLog = document.querySelector('#chat-log');
+            if (!document.getElementById(`msg-${data.message_id}`)){
             const messageDiv = document.createElement('div');
-            messageDiv.classList.add('message');
-
-            if (data.username === "{{ request.user.username }}"){
-                messageDiv.classList.add('me');
-            } else {
-                messageDiv.classList.add('other');
-            }
+            messageDiv.className = `message ${data.username === currentUser ? 'me' : 'other'}`;
+            messageDiv.id = `msg-${data.message_id}`;
+            
             
             messageDiv.innerHTML = `
                 <span class="username">${data.username}</span>
                 <span class="content">${data.message}</span>
-                <span class="timestamp">${data.timestamp}</span>
+                <span class="timestamp">${data.timestamp}
+                    <span class="tick" id="tick-${data.message_id}">
+                        ${data.username === currentUser ? '✓' : ''}
+                    </span>
+                </span>
             `;
             chatLog.appendChild(messageDiv);
             chatLog.scrollTop = chatLog.scrollHeight;
-        };
+        }
+        
+        if (data.username !== currentUser && data.message_id) {
+            chatSocket.send(JSON.stringify({
+                'type': 'message_read',
+                'message_id': data.message_id
+            }));
+        }
+    }
+        
+        if (data.type === 'message_read') {
+            const tickElement = document.querySelector(`#tick-${data.message_id}`);
+            if (tickElement) {
+                tickElement.innerHTML = '✓✓'; 
+                tickElement.style.color = '#3498db'; 
+            }
+        }
 
         messageInputDom.focus();
 

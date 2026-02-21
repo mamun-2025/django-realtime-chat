@@ -44,6 +44,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
    async def receive(self, text_data):
       text_data_json = json.loads(text_data)
 
+      if text_data_json.get('type') == 'message_read':
+         msg_id = text_data_json.get('message_id')
+         await self.mark_message_as_read(msg_id)
+         await self.channel_layer.group_send(
+            self.room_group_name, {
+               'type': 'message_read_update',
+               'message_id': msg_id
+            }
+         )
+         return
+
+
       if text_data_json.get('type') == 'typing':
          await self.channel_layer.group_send(
             self.room_group_name,
@@ -57,12 +69,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
       message = text_data_json['message']
       user = self.scope['user']
       time_now = datetime.datetime.now().strftime('%I:%M %p')
-
-
       username = user.username if user.is_authenticated else 'Anonymous'
 
+      msg_id = None
       if user.is_authenticated:
-         await self.save_message(username, self.room_name, message)
+         msg_obj = await self.save_message(username, self.room_name, message)
+         msg_id = msg_obj.id
 
       await self.channel_layer.group_send(
          self.room_group_name,
@@ -71,8 +83,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'message': message,
             'username': username,
             'timestamp': time_now,
+            'message_id': msg_obj.id
          }
       )
+
 
    async def typing_status(self, event):
       await self.send(text_data=json.dumps({
@@ -86,11 +100,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
       message = event['message']
       username = event['username']
       timestamp = event['timestamp']
+      message_id = event.get('message_id')
 
       await self.send(text_data=json.dumps({
          'message': message,
          'username': username,
-         'timestamp': timestamp                                      
+         'timestamp': timestamp,
+         'message_id': message_id,
+         'type': 'chat_message'
+
       }))
 
    async def send_online_users(self):
@@ -108,9 +126,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
       }))
 
 
+   async def message_read_update(self, event):
+      await self.send(text_data=json.dumps({
+         'type': 'message_read',
+         'message_id': event['message_id']
+      }))
+
    @database_sync_to_async
    def save_message(self, username, room, message):
       from django.contrib.auth.models import User
       user = User.objects.get(username=username)
-      Message.objects.create(user=user, room_name= room, content=message)
+      return Message.objects.create(user=user, room_name= room, content=message)
 
+   @database_sync_to_async
+   def mark_message_as_read(self, msg_id):
+      try:
+         msg = Message.objects.get(id=msg_id)
+         msg.is_read = True
+         msg.save()
+      except:
+         pass

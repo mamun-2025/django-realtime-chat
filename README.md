@@ -26,6 +26,8 @@ The porject has evolved from a basic broadcaster to a persistent chat system:
 - [x] **Message Timestamps:** Integrated real-time timestamps (e.g., 10:30 PM) using Django filters and JavaScript for a professional chat experience.
 - [x] **Online Presence:** Real-time tracking and display of active users in the chat room using Django Channel Layers.
 - [x] **Typing Indicator:** Live Visual Feedback ("User is typing...") when participants are composing in messages.
+- [x] **Message Seen/Unseen Status:** Real-time double-tick (✓✓) system that indicates when a message has been read by the recipient.
+
 
 --- 
 
@@ -88,13 +90,13 @@ The porject has evolved from a basic broadcaster to a persistent chat system:
 
 - [x]~~ Storing chat history in the database.~~(Completed)
 
-[ ] Private Messaging (1-to-1).
+- [x] Online/Offline presence indicators.
 
-[ ] Online/Offline presence indicators.
+- [x] Real-time typing indicators.
 
 [ ] Image/File sharing capability.
 
-[ ] Real-time typing indicators.
+[ ] Private Messaging (1-to-1).
 
 ---
 
