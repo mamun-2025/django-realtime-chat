@@ -1,8 +1,20 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from .models import Message
+from .models import Message, PrivateChatRoom, PrivateMessage
+
+
+def get_or_create_private_room(u1, u2):
+   user_ids = sorted([u1.id, u2.id])
+   unique_room_id = f"private_{user_ids[0]}_{user_ids[1]}"
+   room, created = PrivateChatRoom.objects.get_or_create(
+      room_id = unique_room_id,
+      defaults={'user1': u1, 'user2': u2}
+   )
+   return room 
+
 
 
 def signup(request):
@@ -19,7 +31,8 @@ def signup(request):
 
 @login_required
 def index(request):
-   return render(request, 'chat/index.html')
+   all_users = User.objects.exclude(id=request.user.id)
+   return render(request, 'chat/index.html', {'all_users': all_users})
 
 @login_required
 def room(request, room_name):
@@ -29,3 +42,18 @@ def room(request, room_name):
       'room_name': room_name,
       'messages': message
       })
+
+
+@login_required
+def private_chat_view(request, target_user_id):
+   target_user = get_object_or_404(User, id=target_user_id)
+   room = get_or_create_private_room(request.user, target_user)
+
+   messages = room.private_messages.all().order_by('timestamp')[:50]
+
+   return render(request, 'chat/private_room.html', {
+      'room': room,
+      'target_user': target_user,
+      'messages': messages,
+      'room_name': room.room_id
+   })

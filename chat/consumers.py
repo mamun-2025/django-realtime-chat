@@ -1,12 +1,14 @@
 
 from channels.db import database_sync_to_async
-from .models import Message
+from .models import Message, PrivateChatRoom, PrivateMessage
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 import datetime
 import base64
 import uuid
 from django.core.files.base import ContentFile
+from django.contrib.auth.models import User
+
 
 class ChatConsumer(AsyncWebsocketConsumer):
 
@@ -25,7 +27,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
          self.channel_name
       )
       await self.accept()
-
       await self.send_online_users()
 
 
@@ -39,7 +40,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
          self.room_group_name,
          self.channel_name
       )
-
       await self.send_online_users()
 
 
@@ -56,7 +56,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if text_data_json.get('type') == 'file':
             file_data = text_data_json.get('file_data')
             file_name = text_data_json.get('file_name')
-
             format, imgstr = file_data.split(';base64,')
             ext = file_name.split('.')[-1]
             actual_file = ContentFile(base64.b64decode(imgstr), name=f"{uuid.uuid4()}.{ext}")
@@ -122,23 +121,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
       }))
 
 
-
    async def chat_message(self, event):
-      message = event['message']
-      username = event['username']
-      timestamp = event['timestamp']
-      message_id = event.get('message_id')
-      image_url = event.get('image_url')
+        await self.send(text_data=json.dumps({
+            'message': event['message'],
+            'username': event['username'],
+            'timestamp': event['timestamp'],
+            'message_id': event.get('message_id'),
+            'image_url': event.get('image_url'),
+            'type': 'chat_message'
+        }))
 
-      await self.send(text_data=json.dumps({
-         'message': message,
-         'username': username,
-         'timestamp': timestamp,
-         'message_id': message_id,
-         'image_url': image_url,
-         'type': 'chat_message'
-
-      }))
 
    async def send_online_users(self):
       await self.channel_layer.group_send(
@@ -154,29 +146,44 @@ class ChatConsumer(AsyncWebsocketConsumer):
          'users': event['users']
       }))
 
-
    async def message_read_update(self, event):
       await self.send(text_data=json.dumps({
          'type': 'message_read',
          'message_id': event['message_id']
       }))
 
+
+
    @database_sync_to_async
-   def save_message(self, username, room, message, image_file=None):
-      from django.contrib.auth.models import User
+   def save_message(self, username, room_name, message_content, image_file=None):
       user = User.objects.get(username=username)
-      return Message.objects.create(
-         user=user, 
-         room_name= room,  
-         content=message,
-         image= image_file
+
+      if room_name.startswith('private_'):
+         try:
+            private_room = PrivateChatRoom.objects.get(room_id=room_name)
+            return PrivateMessage.objects.create(
+               room = private_room,
+               sender = user,
+               content = message_content,
+               image = image_file
+            )
+         except PrivateChatRoom.DoesNotExist:
+            return None
+      else:
+         return Message.objects.create(
+            user=user, 
+            room_name=room_name,
+            content = message_content,
+            image = image_file
          )
+
 
    @database_sync_to_async
    def mark_message_as_read(self, msg_id):
-      try:
-         msg = Message.objects.get(id=msg_id)
-         msg.is_read = True
-         msg.save()
-      except:
-         pass
+       try:
+            if Message.objects.filter(id=msg_id).exists():
+               Message.objects.filter(id=msg_id).update(is_read=True)
+            else:
+               PrivateMessage.objects.filter(id=msg_id).update(is_read=True)
+       except:
+          pass

@@ -1,70 +1,56 @@
 
 # 💬 Django Real-Time Chat Engine
-A professional real-time communication engine built using **Django Channels**, **Websocket** and **Django ORM**.This project implements an asynchronous backend architecture to handle live messaging with parmanent data persistence.
+A professional, high-performance real-time communication engine built using **Django Channels**, **WebSockets**, and **Django ORM**. This project implements an asynchronous backend architecture to handle both public room broadcasting and secure one-to-one private messaging.
 
 ---
 
-## 🚀 Current Implementation (Milestone 1, 2, 3 & 4)
+## 🚀 Recent Update: Milestone 6 (One-to-One Private Messaging)
+The engine has evolved from a public broadcaster to a sophisticated private communication tool:
 
-The porject has evolved from a basic broadcaster to a persistent chat system:
+- [x] **Dynamic Private Room Logic:** Implemented a unique Room-ID generation algorithm using sorted User IDs (e.g., `private_1_2`) to ensure consistent private channels.
+- [x] **Isolated Database Models:** Created `PrivateChatRoom` and `PrivateMessage` models to ensure private data is stored separately from public room logs.
+- [x] **Hybrid WebSocket Consumer:** Upgraded `ChatConsumer` to intelligently detect and route messages based on room types (Public vs. Private).
+- [x] **User Directory Dashboard:** A new UI section in `index.html` that allows users to see all registered members and initiate private chats instantly.
+- [x] **Persistence for DMs:** Fully integrated history fetching for private chats, ensuring messages and images remain accessible after reload.
 
-- [x] **ASGI Configaration:** Configuared `asgi.py` to handle both Http and WebSockets Protocols using `ProtocolTypeRouter`.
-- [x] **WebSocket Routing:** Implemented Dynamic URL routing in `routing.py` to capture room names using regular expressions.
-- [x] **ASYNC Consumers:** Developed `ChatConsumer` in `consumers.py` to manage connection logic, room groups and real-time message broadcasting.
-- [x] **URLs Configuration:** Mapped landing page & dynamic room URLs.
-- [x] **Dockerized Redis Broker:** Successfully deployed `Redis` using Docker to manage real-time message brokering.
-- [x] **Daphne Integration:** Using `Daphne` as the primary ASGI server for full-duplex communication. 
-- [x] **Frontend Integration:** Fully functional JavaScript WebSocket API implemented for real-time messaging without refresh.
-- [x] **Database Persistence (New):** Integrated `Message` model to store chat parmanently in the database.
-- [x] **Thread-Safe DB Operations:** Used `@database sync_to_async` to handle synchronous Django ORM inside async consumers.
-- [x] **Chat History Rendering:** Automated fetching of the last 50 messages upon joining a room via `views.py`.
-- [x] **User Authentication (New):** Built-in Signup, Login, and Logout functionality using Django's Auth system.
-- [x] **Access Control:** Restricted chat rooms to authenticated users only using @login_required decorators and LoginRequiredMixin.
-- [x] **Template Inheritance:** Optimized UI with base.html and Django template blocks.
-- [x] **Smart Chat UI:** Implemented dynamic left/right message alignment with color coding (Blue for self, Red for others).
-- [x] **Improved UX:** Added auto-scroll, "Enter" key support, and real-time message identification for a better chat experience.
-- [x] **Message Timestamps:** Integrated real-time timestamps (e.g., 10:30 PM) using Django filters and JavaScript for a professional chat experience.
-- [x] **Online Presence:** Real-time tracking and display of active users in the chat room using Django Channel Layers.
-- [x] **Typing Indicator:** Live Visual Feedback ("User is typing...") when participants are composing in messages.
-- [x] **Message Seen/Unseen Status:** Real-time double-tick (✓✓) system that indicates when a message has been read by the recipient.
+---
 
-## 🚀 Milestone 5: Multimedia Support & Advanced UX
-This update focuses on rich media sharing and imporving the overall user experience.
-- [x] **Asynchronous Image Sharing:** Users can now send images instantly. Files are processed using Base64 encoding with unique UUIDs to prevent filename conflicts.
-- [x] **Media persistence:** Integrated database logic to ensure all shared images are saved and remain visible even after refreshing the page.
-- [x] **Smart Hyperlinks:** "URL detection" feature that automatically identifies website links in text and ocnverts them into clickable tags.
-- [x] **Interactive Media UI:** Enhanced the that interfce with image previews. Users can now click on any shared photo to view it in full size in a new tab.
+## 🛠️ Core Features Implementation (Milestone 1 - 5)
 
---- 
+- [x] **ASGI Configuration:** Powered by `Daphne` using `ProtocolTypeRouter` for seamless HTTP/WebSocket handling.
+- [x] **Dockerized Redis Broker:** Uses `Redis` as the channel layer to manage real-time message brokering.
+- [x] **Multimedia Support:** Instant image sharing using Base64 encoding and unique UUID filename generation.
+- [x] **Advanced UX Components:**
+    - **Typing Indicators:** Real-time "User is typing..." feedback.
+    - **Online Presence:** Live tracking of active users in rooms.
+    - **Read Receipts:** Double-tick (✓✓) system indicating message status.
+    - **Auto-Hyperlinks:** Automatic URL detection and clickable link conversion.
+- [x] **Security:** Full Django Auth integration with restricted access via `@login_required`.
 
-## 🛠️ Technical Workflow & Security
+---
 
-1. Real-time Communication:
-    1. **HandShake:** The client initiates a WebSocket connection to `ws/chat/ROOM_NAME/`.
-    2. **Routing:** `routing.py` identifies the URL and maps it to the `ChatConsumer`.
-    3. **Channel Layers:** Uses Redis/Channel Layers to bridge communication between different users in the same room. 
-    4. **Asynchronous Handling:** All operations are non-blocking (Async), ensuring high scalability.
-    5. **Persistent Storage:** Upon receiving a message, the consumer saves it to the database asynchronously before broadcasting.
-    6. **History Retrieval:** When a user enters a room, the view layer queries the Database to render the chat history.
+## 📂 Technical Workflow & Architecture
 
-2. User Authentication & Access Control:
-    7. **Secure Registration:** New users register through a secure UserCreationForm.
-    8. **Session Management:** Django's LoginView handles credential verification and session creation.
-    9. **Guard (Protected Access):** The @login_required decorator acts as a middleware to ensure unauthenticated users are redirected to the login page.
-    10. **Identity Persistence:** Messages are now linked to the User model, ensuring every message has an owner (no more "Anonymous").
+
+
+1. **Handshake:** Client initiates WebSocket connection to `/ws/chat/<room_name>/`.
+2. **Routing:** `routing.py` maps the connection to `ChatConsumer`.
+3. **Database Sync:** Uses `@database_sync_to_async` to perform thread-safe ORM operations within the async consumer.
+4. **Broadcast Logic:** Messages are received by the consumer, saved to the database, and then broadcasted to the specific Channel Layer group.
+5. **Private Logic:** For private chats, the consumer verifies the `private_` prefix and interacts with `PrivateMessage` models instead of the default `Message` model.
+
+---
+
+## 📂 Project Structure (Core Files)
+
+- `asgi.py`: Entry point for ASGI servers.
+- `consumers.py`: Handles connection logic and real-time data routing.
+- `routing.py`: Maps WebSocket URLs to Consumers.
+- `models.py`: Defines `Message`, `PrivateChatRoom`, and `PrivateMessage` schemas.
+- `views.py`: Manages page rendering and initial chat history retrieval.
 
 --- 
 
-## 📂 Project Structure (core files)
-
-- `asgi.py`: The entry point for ASGI-compitable web-servers.
-- `consumers.py`: Handles the server-side logic (Connect, Receive, Broadcast).
-- `routing.py`: WebSocket equivalent of `urls.py`.
-- `views.py`: Handles initial page rendering and **History Fetching**.
-- `models.py`: Defines the `Message` schema.
-- `templates/chat/`:Contains `base.html`, `index.html`, `room.html`, `signup.html` and `login.html`. 
-
---- 
 
 ## ⚙️ How to Setup
 
@@ -77,14 +63,12 @@ This update focuses on rich media sharing and imporving the overall user experie
     docker run --name my-chat-redis -p 6379:6379 -d redis
 
 3. Install Dependencies:
-    pip install django daphne channels channels-redis
+    pip install django daphne channels channels-redis Pillow
 
-4. Apply Migrations:
+4. Migrations & Superuser:
     python manage.py makemigrations
     python manage.py migrate
-
-1. Create a superuser to access the admin panel:
-   python manage.py createsuperuser
+    python manage.py createsuperuser
 
 5. Run Server
    python manage.py runserver
@@ -102,7 +86,7 @@ This update focuses on rich media sharing and imporving the overall user experie
 
 - [x] Image/File sharing capability.
 
-[ ] Private Messaging (1-to-1).
+- [x] Private Messaging (1-to-1).
 
 [ ] Audio/Voice Message Recording.
 
