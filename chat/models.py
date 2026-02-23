@@ -8,6 +8,7 @@ class Message(models.Model):
    timestamp = models.DateTimeField(auto_now_add=True)
    is_read = models.BooleanField(default=False)
    image = models.ImageField(upload_to='chat_images/', null=True, blank=True)
+   audio = models.FileField(upload_to='chat_audio/', null=True, blank=True)
 
    def __str__(self):
       return f'{self.user.username}:{self.content[:20] if self.content else "Image"}'
@@ -30,6 +31,7 @@ class PrivateMessage(models.Model):
    sender = models.ForeignKey(User, on_delete=models.CASCADE)
    content = models.TextField(null=True, blank=True)
    image = models.ImageField(upload_to='chat_images/', null=True, blank=True)
+   audio = models.FileField(upload_to='chat_audio/', null=True, blank=True)
    timestamp = models.DateTimeField(auto_now_add=True)
    is_read = models.BooleanField(default=False)
 

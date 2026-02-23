@@ -4,6 +4,15 @@ A professional, high-performance real-time communication engine built using **Dj
 
 ---
 
+## 🎤 Milestone 7: Voice Messaging (Latest)
+Enhanced the engine with real-time voice communication features:
+
+- [x] **Voice Recording:** Record audio directly via `MediaRecorder API`.
+- [x] **WebSocket Streaming:** Instant delivery using `Base64 encoding` over sychronous channels. 
+- [x] **Backend Storage:** Auto-decoding and saving as `.wav` files with `UUID` naming.
+- [x] **Dynamic UI:** Integrated HTML5 audio players and `Live Recording (🔴)` indicators.
+- [x] **Universal Support:** Fully functional in both `Public Rooms` and `Private DMs`.
+
 ## 🚀 Recent Update: Milestone 6 (One-to-One Private Messaging)
 The engine has evolved from a public broadcaster to a sophisticated private communication tool:
 
@@ -32,12 +41,17 @@ The engine has evolved from a public broadcaster to a sophisticated private comm
 ## 📂 Technical Workflow & Architecture
 
 
-
 1. **Handshake:** Client initiates WebSocket connection to `/ws/chat/<room_name>/`.
 2. **Routing:** `routing.py` maps the connection to `ChatConsumer`.
 3. **Database Sync:** Uses `@database_sync_to_async` to perform thread-safe ORM operations within the async consumer.
 4. **Broadcast Logic:** Messages are received by the consumer, saved to the database, and then broadcasted to the specific Channel Layer group.
 5. **Private Logic:** For private chats, the consumer verifies the `private_` prefix and interacts with `PrivateMessage` models instead of the default `Message` model.
+6. **Audio Capture (MediaRecorder API):** Captures raw audio streams from the user's microphone and stores them in small data chunks.
+7. **Base64 Encoding:** Upon stopping the recording, the `Blob` object is converted into a Base64-encoded string via `FileReader` to make it compatible with JSON transmission over WebSockets.
+8. **Asynchronous File Handling:** - The `ChatConsumer` receives the Base64 payload.
+    It decodes the string into binary data using `base64.b64decode`.
+    Saves the data as a `.wav` file using Django's `ContentFile`, assigning a unique UUID-based filename to prevent overwriting.
+9. **Media URL Broadcasting:** Once saved, the server generates the file's absolute URL and broadcasts it to all group members, triggering the HTML5 <audio> player in their chat interface.
 
 ---
 
@@ -48,9 +62,9 @@ The engine has evolved from a public broadcaster to a sophisticated private comm
 - `routing.py`: Maps WebSocket URLs to Consumers.
 - `models.py`: Defines `Message`, `PrivateChatRoom`, and `PrivateMessage` schemas.
 - `views.py`: Manages page rendering and initial chat history retrieval.
+- `Multimedia Persistence`: Updated `Message` and `PrivateMessage` models with a `FileField` to store audio recordings in the `/media/audio/` directory.
 
 --- 
-
 
 ## ⚙️ How to Setup
 
@@ -88,7 +102,7 @@ The engine has evolved from a public broadcaster to a sophisticated private comm
 
 - [x] Private Messaging (1-to-1).
 
-[ ] Audio/Voice Message Recording.
+- [x] Audio/Voice Message Recording.
 
 ---
 

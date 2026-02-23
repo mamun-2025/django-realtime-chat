@@ -16,7 +16,6 @@
     .message.other .content { color: white; }
 
     .tick { font-size: 0.9em; margin-left: 5px; color: #aaa; }
-    
     .username { font-weight: bold; display: block; font-size: 0.85em; }
     .timestamp { font-size: 0.7em; display: block; margin-top: 5px; opacity: 0.8; text-align: right; }
 {% endblock %}
@@ -33,10 +32,22 @@
                 {% endif %}
 
                 {% if msg.content %}
-                <span class="content">{{ msg.content|urlize }}</span>
+                    <span class="content">{{ msg.content|urlize }}</span>
+                {% endif %}
+
+                {% if msg.audio %}
+                    <audio controls style="max-width: 100%; margin-top: 5px; display: block;">
+                        <source src="{{ msg.audio.url }}" type="audio/wav">
+                        Your browser does not support the audio element.
+                    </audio>
                 {% endif %}
                 
-                <span class="timestamp">{{ msg.timestamp|date:"h:i A" }}</span>
+                <span class="timestamp">
+                    {{ msg.timestamp|date:"h:i A" }}
+                    <span class="tick" id="tick-{{ msg.id }}">
+                        {% if msg.sender == request.user %}{% if msg.is_read %}✓✓{% else %}✓{% endif %}{% endif %}
+                    </span>
+                </span>
             </div>
         {% endfor %}
     </div>
@@ -47,23 +58,26 @@
         <ul id="online-users-list" style="display: flex; gap: 10px; list-style: none; padding: 0; margin-top: 5px;"></ul>
     </div>
 
-    <br>
-    <div style="display: flex; gap: 10px; align-items: center;">
-        <input type="file" id="chat-file-input" style="display: none;" accept="image/*">
-        <label for="chat-file-input" style="cursor: pointer; font-size: 1.5em; color: #5887ff;">📷</label>
+    <div class="chat-input-wrapper" style="position: sticky; bottom: 0; background: white; padding: 10px;">
+        <div class="chat-input-container" style="display: flex; gap: 10px; align-items: center; background: #f1f1f1; padding: 5px 15px; border-radius: 30px;">
+            <input type="file" id="chat-file-input" style="display: none;" accept="image/*">
+            <label for="chat-file-input" style="cursor: pointer; font-size: 1.5rem; margin: 0; color: #666; display: flex; align-items: center;">📷</label>
 
-        <input id="chat-message-input" type="text" style="flex-grow: 1; padding: 10px;" placeholder="Type message...">
-        <input id="chat-message-submit" type="button" value="Send" style="padding: 10px 20px; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            <button id="record-btn" type="button" style="background: none; border: none; cursor: pointer; font-size: 1.5rem; padding: 0; color: #666; display: flex; align-items: center;">🎤</button>
+
+            <input id="chat-message-input" type="text" style="flex-grow: 1; border: none; padding: 10px; border-radius: 30px; outline: none; background: transparent;" placeholder="Type message...">
+            
+            <button id="chat-message-submit" type="button" class="btn btn-success" style="border-radius: 20px; padding: 5px 20px; background-color: #27ae60; color: white; border: none;">Send</button>
+        </div>
+    
+        <div id="recording-status" style="display: none; color: red; font-size: 0.8rem; margin-left: 55px; font-weight: bold; margin-top: 5px;">
+            🔴 Recording...
+        </div>
     </div>
 
     {{ room_name|json_script:"room-name" }}
 
-
-
-
-
-    <script>
-        
+<script>
     function urlify(text) {
         if (!text) return "";
         var urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -81,7 +95,6 @@
         const data = JSON.parse(e.data);
         const currentUser = "{{ request.user.username }}";
 
-        // ১. টাইপিং ইন্ডিকেটর
         if (data.type === 'typing' && data.username !== currentUser) {
             typingDiv.innerText = data.username + ' is typing...';
             if (window.typingTimer) clearTimeout(window.typingTimer);
@@ -89,7 +102,6 @@
             return;
         }
 
-        // ২. অনলাইন ইউজার লিস্ট
         if (data.type === 'user_list') {
             const listElement = document.querySelector('#online-users-list');
             if (listElement) {
@@ -104,7 +116,6 @@
             return; 
         }
         
-        // ৩. চ্যাট মেসেজ এবং ইমেজ রিসিভ
         if (data.type === 'chat_message') {
             const chatLog = document.querySelector('#chat-log');
             const messageDiv = document.createElement('div');
@@ -113,10 +124,14 @@
 
             let contentHTML = `<span class="username">${data.username}</span>`;
 
-            // ইমেজের জন্য চেক
             if (data.image_url) {
                 contentHTML += `<img src="${data.image_url}" style="max-width: 250px; border-radius: 10px; margin: 10px 0; display: block; cursor:pointer;" onclick="window.open('${data.image_url}')">`;
             } 
+            
+            // অডিও রেন্ডারিং প্রাইভেট চ্যাটের জন্য
+            if (data.audio_url) {
+                contentHTML += `<audio controls style="max-width: 100%; margin-top: 5px; display: block;"><source src="${data.audio_url}" type="audio/wav"></audio>`;
+            }
             
             if (data.message) {
                 contentHTML += `<span class="content">${urlify(data.message)}</span>`;
@@ -134,7 +149,6 @@
             chatLog.appendChild(messageDiv);
             chatLog.scrollTop = chatLog.scrollHeight;
 
-            // ৪. মেসেজ রিড সিগন্যাল পাঠানো
             if (data.username !== currentUser && data.message_id) {
                 chatSocket.send(JSON.stringify({
                     'type': 'message_read',
@@ -143,7 +157,6 @@
             }
         }
         
-        // ৫. রিড স্ট্যাটাস আপডেট (Double Tick)
         if (data.type === 'message_read') {
             const tickElement = document.querySelector(`#tick-${data.message_id}`);
             if (tickElement) {
@@ -151,41 +164,73 @@
                 tickElement.style.color = '#3498db'; 
             }
         }
-    }; // onmessage ends here
-
-    chatSocket.onclose = function(e) {
-        console.error('Chat socket closed unexpectedly');
     };
-
-    messageInputDom.focus();
 
     messageInputDom.onkeyup = function(e) {
         if (e.keyCode === 13) {
             document.querySelector('#chat-message-submit').click();
         } else {
-            chatSocket.send(JSON.stringify({ 'type': 'typing' }));
+            if (chatSocket.readyState === WebSocket.OPEN) {
+                chatSocket.send(JSON.stringify({ 'type': 'typing' }));
+            }
         }
     }
 
     document.querySelector('#chat-message-submit').onclick = function(e){
         const message = messageInputDom.value;
-        if (message.trim() !== ""){
+        if (message.trim() !== "" && chatSocket.readyState === WebSocket.OPEN){
             chatSocket.send(JSON.stringify({'message': message}));
             messageInputDom.value = '';
         }
     };
 
-    // ইমেজ আপলোড হ্যান্ডলার
+    // অডিও রেকর্ডিং লজিক (প্রাইভেট রুমে যুক্ত করা হলো)
+    let mediaRecorder;
+    let audioChunks = [];
+    const recordBtn = document.getElementById('record-btn');
+    const statusText = document.getElementById('recording-status');
+
+    recordBtn.onclick = async () => {
+        if (!mediaRecorder || mediaRecorder.state === "inactive") {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    const reader = new FileReader();
+                    reader.readAsDataURL(audioBlob);
+                    reader.onloadend = () => {  
+                        const base64audio = reader.result;
+                        if (chatSocket.readyState === WebSocket.OPEN) {
+                            chatSocket.send(JSON.stringify({
+                                'type': 'audio',
+                                'file_data': base64audio
+                            }));
+                        }
+                    };
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                mediaRecorder.start();
+                recordBtn.innerHTML = "🛑";
+                statusText.style.display = "block";
+            } catch (err) {
+                alert("Microphone access denied!");
+            }
+        } else {
+            mediaRecorder.stop();
+            recordBtn.innerHTML = "🎤";
+            statusText.style.display = "none";
+        }
+    };
+
     const fileInput = document.querySelector('#chat-file-input');
     fileInput.onchange = function(e) {
         const file = fileInput.files[0];
         if (!file) return;
-
-        if (file.size > 5 * 1024 * 1024) {
-            alert("File is too large! Please upload under 5MB.");
-            return;
-        }
-
         const reader = new FileReader();
         reader.onload = function(event) {
             chatSocket.send(JSON.stringify({
@@ -195,8 +240,7 @@
             }));
         };
         reader.readAsDataURL(file);
-        fileInput.value = ''; // ক্লিয়ার করে রাখা যাতে একই ছবি আবার পাঠানো যায়
+        fileInput.value = ''; 
     };
 </script>
 {% endblock %}
-
