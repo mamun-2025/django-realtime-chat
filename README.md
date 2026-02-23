@@ -4,6 +4,13 @@ A professional, high-performance real-time communication engine built using **Dj
 
 ---
 
+## 🗄️ Milestone 8: Production-Ready Database & Security
+Transitioned from development-grade SQLite to production-grade PostgreSQL:
+
+- [x] **Database Migration:** Migrated the entire schema to **PostgreSQL** for better concurrency and scalability.
+- [x] **Environment Security:** Integrated `django-environ` to manage sensitive data (Secret Keys, DB Credentials) via **.env** files.
+- [x] **Advanced Search Logic:** (In Progress) Implementing optimized chat search using PostgreSQL's indexing.
+
 ## 🎤 Milestone 7: Voice Messaging (Latest)
 Enhanced the engine with real-time voice communication features:
 
@@ -21,8 +28,6 @@ The engine has evolved from a public broadcaster to a sophisticated private comm
 - [x] **Hybrid WebSocket Consumer:** Upgraded `ChatConsumer` to intelligently detect and route messages based on room types (Public vs. Private).
 - [x] **User Directory Dashboard:** A new UI section in `index.html` that allows users to see all registered members and initiate private chats instantly.
 - [x] **Persistence for DMs:** Fully integrated history fetching for private chats, ensuring messages and images remain accessible after reload.
-
----
 
 ## 🛠️ Core Features Implementation (Milestone 1 - 5)
 
@@ -77,14 +82,18 @@ The engine has evolved from a public broadcaster to a sophisticated private comm
     docker run --name my-chat-redis -p 6379:6379 -d redis
 
 3. Install Dependencies:
-    pip install django daphne channels channels-redis Pillow
+    pip install django daphne channels channels-redis Pillow psycopg2 django-environ
 
-4. Migrations & Superuser:
+4. Setup Environment Variables:
+   - Create a `.env` file in the root directory.
+   - Add your `SECRET_KEY`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, and `DB_PORT`.
+
+5. Migrations & Superuser:
     python manage.py makemigrations
     python manage.py migrate
     python manage.py createsuperuser
 
-5. Run Server
+6. Run Server
    python manage.py runserver
 
 ---
@@ -94,15 +103,21 @@ The engine has evolved from a public broadcaster to a sophisticated private comm
 
 - [x]~~ Storing chat history in the database.~~(Completed)
 
-- [x] Online/Offline presence indicators.
+- [x]~~ Online/Offline presence indicators.~~(Completed)
 
-- [x] Real-time typing indicators.
+- [x]~~ Real-time typing indicators.~~(Completed)
 
-- [x] Image/File sharing capability.
+- [x]~~ Image/File sharing capability.~~(Completed)
 
-- [x] Private Messaging (1-to-1).
+- [x]~~ Private Messaging (1-to-1).~~(Completed)
 
-- [x] Audio/Voice Message Recording.
+- [x]~~ Audio/Voice Message Recording.~~(Completed)
+
+- [ ] **Live Push Notifications:** Browser-level alerts using Service Workers.
+
+- [ ] **Chat Search:** Search specific keywords within message history.
+
+- [ ] **Cloud Deployment:** Live hosting on Render/AWS with PostgreSQL.
 
 ---
 
