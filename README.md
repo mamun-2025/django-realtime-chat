@@ -10,6 +10,7 @@ Transitioned from development-grade SQLite to production-grade PostgreSQL:
 - [x] **Database Migration:** Migrated the entire schema to **PostgreSQL** for better concurrency and scalability.
 - [x] **Environment Security:** Integrated `django-environ` to manage sensitive data (Secret Keys, DB Credentials) via **.env** files.
 - [x] **Advanced Search Logic:** (In Progress) Implementing optimized chat search using PostgreSQL's indexing.
+- [x] **Real-time Search:** Implemented AJAX-based keyword searching for instant message retrieval.
 
 ## 🎤 Milestone 7: Voice Messaging (Latest)
 Enhanced the engine with real-time voice communication features:
@@ -113,9 +114,9 @@ The engine has evolved from a public broadcaster to a sophisticated private comm
 
 - [x]~~ Audio/Voice Message Recording.~~(Completed)
 
-- [ ] **Live Push Notifications:** Browser-level alerts using Service Workers.
+- [x] **Chat Search:** Search specific keywords within message history.
 
-- [ ] **Chat Search:** Search specific keywords within message history.
+- [ ] **Live Push Notifications:** Browser-level alerts using Service Workers.
 
 - [ ] **Cloud Deployment:** Live hosting on Render/AWS with PostgreSQL.
 

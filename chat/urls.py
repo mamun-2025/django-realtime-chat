@@ -11,6 +11,7 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('private/<int:target_user_id>/', views.private_chat_view, name='private_chat'),
     path('<str:room_name>/', views.room, name='room'), 
+    path('search/<str:room_id>/', views.search_private_messages, name='search_messages'),
     
     
 ]

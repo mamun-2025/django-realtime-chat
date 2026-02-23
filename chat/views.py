@@ -4,6 +4,31 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from .models import Message, PrivateChatRoom, PrivateMessage
+from django.db.models import Q
+from django.http import JsonResponse
+
+
+def search_private_messages(request, room_id):
+   query = request.GET.get('q', '').strip()
+   if not query:
+      return JsonResponse({'results': []})
+   
+   messages = PrivateMessage.objects.filter(
+      room_id = room_id
+   ).filter(
+      Q(content__icontains=query) | Q(sender_username_icontains=query)
+   ).order_by('-timestamp')[:20]
+
+   results = []
+   for msg in messages:
+        results.append({
+            'sender': msg.sender.username,
+            'content': msg.content,
+            'timestamp': msg.timestamp.strftime('%H:%M %p'),
+        })
+
+   return JsonResponse({'results': results})
+
 
 
 def get_or_create_private_room(u1, u2):
