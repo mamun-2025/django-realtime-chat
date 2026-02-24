@@ -1,4 +1,5 @@
 
+
 {% extends 'chat/base.html' %}
 {% block title %}Room: {{ room_name }}{% endblock %}
 
@@ -288,7 +289,7 @@
         const roomId = roomName;
 
         if (query.length > 2) {
-            fetch(`/search/${roomId}/?q=${query}`)
+            fetch(`/chat/search/${roomId}/?q=${query}`)
                 .then(response => response.json())
                 .then(data => {
                     resultsDropdown.innerHTML = '';
@@ -296,7 +297,7 @@
                         resultsDropdown.style.display = 'block';
                         data.results.forEach(msg => {
                             const item = document.createElement('div');
-                            item.className = 'search-results-item';
+                            item.className = 'search-result-item';
                             item.innerHTML = `
                                 <strong>${msg.sender}</strong>: ${msg.content}
                                 <small>${msg.timestamp}</small>
@@ -321,4 +322,3 @@
 
 </script>
 {% endblock %}
-

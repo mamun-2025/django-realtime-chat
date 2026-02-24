@@ -1,5 +1,6 @@
 
 
+
 {% extends 'chat/base.html' %}
 {% block title %}Room: {{ room_name }}{% endblock %}
 
@@ -269,7 +270,7 @@
         const roomId = "{{ room.room_id }}"; // এখানে room.room_id ব্যবহার করা হয়েছে
 
         if (query.length > 2) {
-            fetch(`/search/${roomId}/?q=${query}`)
+            fetch(`/chat/search/${roomId}/?q=${query}`)
                 .then(response => response.json())
                 .then(data => {
                     resultsDropdown.innerHTML = '';

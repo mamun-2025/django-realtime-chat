@@ -8,28 +8,37 @@ from django.db.models import Q
 from django.http import JsonResponse
 
 
-def search_private_messages(request, room_id):
-   query = request.GET.get('q', '').strip()
-   if not query:
-      return JsonResponse({'results': []})
-   
-   messages = PrivateMessage.objects.filter(
-      room_id = room_id
-   ).filter(
-      Q(content__icontains=query) | Q(sender_username_icontains=query)
-   ).order_by('-timestamp')[:20]
+def search_messages(request, room_id): # নাম একটু জেনেরিক করলাম
+    query = request.GET.get('q', '').strip()
+    if not query:
+        return JsonResponse({'results': []})
+    
+    # রুমের নামের শুরুতে 'private_' থাকলে সেটি প্রাইভেট চ্যাট
+    if room_id.startswith('private_'):
+        messages = PrivateMessage.objects.filter(
+            room__room_id=room_id # room_id নয়, room__room_id (মডেলের ফিল্ড নাম অনুযায়ী)
+        ).filter(
+            Q(content__icontains=query) | Q(sender__username__icontains=query)
+        ).order_by('-timestamp')[:20]
+    else:
+        # এটি পাবলিক রুমের জন্য
+        messages = Message.objects.filter(
+            room_name=room_id
+        ).filter(
+            Q(content__icontains=query) | Q(user__username__icontains=query)
+        ).order_by('-timestamp')[:20]
 
-   results = []
-   for msg in messages:
+    results = []
+    for msg in messages:
+        # মডেল ভেদে ইউজার ফিল্ডের নাম আলাদা হতে পারে (sender vs user)
+        sender_name = msg.sender.username if hasattr(msg, 'sender') else msg.user.username
         results.append({
-            'sender': msg.sender.username,
+            'sender': sender_name,
             'content': msg.content,
             'timestamp': msg.timestamp.strftime('%H:%M %p'),
         })
 
-   return JsonResponse({'results': results})
-
-
+    return JsonResponse({'results': results})
 
 def get_or_create_private_room(u1, u2):
    user_ids = sorted([u1.id, u2.id])
