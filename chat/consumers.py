@@ -9,6 +9,8 @@ import base64
 import uuid
 from django.core.files.base import ContentFile
 from django.contrib.auth.models import User
+from .models import UserProfile
+from django.utils import timezone
 
 class ChatConsumer(AsyncWebsocketConsumer):
     online_users = set()
@@ -28,6 +30,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.accept()
         await self.send_online_users()
 
+        if self.user.is_authenticated:
+            await self.update_user_status(self.user, True)
+
     async def disconnect(self, close_code):
         if self.user.is_authenticated:
             ChatConsumer.online_users.discard(self.user.username)
@@ -37,6 +42,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
         await self.send_online_users()
+
+        if self.user.is_authenticated:
+            await self.update_user_status(self.user, False)
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
@@ -181,3 +189,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def mark_message_as_read(self, msg_id):
         Message.objects.filter(id=msg_id).update(is_read=True)
         PrivateMessage.objects.filter(id=msg_id).update(is_read=True)
+
+    @database_sync_to_async
+    def update_user_status(self, user, status):
+        profile, created = UserProfile.objects.get_or_create(user=user)
+        profile.is_online = status
+        profile.last_seen = timezone.now()
+        profile.save()

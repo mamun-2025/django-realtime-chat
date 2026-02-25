@@ -4,6 +4,14 @@ A professional, high-performance real-time communication engine built using **Dj
 
 ---
 
+## 🟢 Milestone 9: User Presence & Last Seen Logic
+Implemented a real-time presence system to track user activity:
+
+- [x] **Persistence:** Created a `UserProfile` model to store `is_online` status and `last_seen` timestamps.
+- [x] **Automated Lifecycle:** Integrated **Django Signals** to auto-generate profiles for every new user.
+- [x] **Real-time Updates:** Leveraged WebSocket `connect/disconnect` hooks in `consumers.py` to update status instantly.
+- [x] **Human-Readable UI:** Used Django's `timesince` filter to display activity status (e.g., "Last seen: 2 hours ago") with color-coded indicators (Green for Online).
+
 ## 🗄️ Milestone 8: Production-Ready Database & Security
 Transitioned from development-grade SQLite to production-grade PostgreSQL:
 

@@ -23,26 +23,38 @@
             </p>
 
             <div id="user-lit" style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
-                {% for user in all_users %}
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #27ae60;">
-                        <div>
+                    {% for user in all_users %}
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #27ae60;">
+                            <div>
                             <span style="font-weight: bold; color: #333;">
-                                {{ user.username}}
+                                {{ user.username }}
                             </span>
-                            <span style="display: block; font-size: 0.75; color: #888;">
+                            
+                            <span style="display: block; font-size: 0.75em; color: #888;">
                                 Joined: {{ user.date_joined|date:"M Y" }}
                             </span>
+
+                            <span style="display: block; font-size: 0.75em; margin-top: 2px;">
+                                {% if user.userprofile.is_online %}
+                                    <span style="color: #2ecc71; font-weight: bold;">
+                                         <span style="font-size: 1.2em;">●</span> Online
+                                    </span>
+                                {% else %}
+                                    <span style="color: #888;">
+                                        Last seen: {{ user.userprofile.last_seen|timesince }} ago
+                                    </span>
+                                {% endif %}
+                            </span>
                         </div>
+                        
                         <a href="{% url 'private_chat' user.id %}" 
-                           style="text-decoration: none; background: #27ae60; color: white; padding: 6px 15px; border-radius: 20px; font-size: 0.85em; transition: 0.3;">
+                            style="text-decoration: none; background: #27ae60; color: white; padding: 6px 15px; border-radius: 20px; font-size: 0.85em;">
                             Chat Now
                         </a>
                     </div>
                 {% empty %}
-                    <p style="text-align: center; color: #999;">
-                        No others users found.
-                    </p>
-                {% endfor %}
+                    <p style="text-align: center; color: #999;">No other users found.</p>
+                {% endfor %} </div>
             </div>
         </div>
     </div>
