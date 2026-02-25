@@ -122,9 +122,7 @@ The engine has evolved from a public broadcaster to a sophisticated private comm
 
 - [x]~~ Audio/Voice Message Recording.~~(Completed)
 
-- [x] **Chat Search:** Search specific keywords within message history.
-
-- [ ] **Live Push Notifications:** Browser-level alerts using Service Workers.
+- [x]~~**Chat Search:** Search specific keywords within message history.~~(Completed)
 
 - [ ] **Cloud Deployment:** Live hosting on Render/AWS with PostgreSQL.
 
