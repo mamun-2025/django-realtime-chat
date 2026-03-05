@@ -1,7 +1,10 @@
 
-import environ
 import os
+import environ
 import dj_database_url
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 env = environ.Env(
    DEBUG = (bool, False)
@@ -28,9 +31,6 @@ CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
 # Application definition
 
 INSTALLED_APPS = [
-    'daphne',
-    'chat',
-    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -39,6 +39,9 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'django.contrib.staticfiles',
     'cloudinary',
+    'daphne',
+    'chat',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -162,6 +165,7 @@ CLOUDINARY_STORAGE = {
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 
+
 LOGIN_REDIRECT_URL = 'index'
 LOGOUT_REDIRECT_URL = 'login'
 LOGIN_URL = 'login'
@@ -170,3 +174,9 @@ CLOUDINARY_CONFIG = {
     'SECURE': True
 }
 
+cloudinary.config(
+    cloud_name = env('CLOUDINARY_CLOUD_NAME'),
+    api_key = env('CLOUDINARY_API_KEY'),
+    api_secret = env('CLOUDINARY_API_SECRET'),
+    secure = True
+)
