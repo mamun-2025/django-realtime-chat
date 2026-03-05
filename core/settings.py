@@ -167,4 +167,7 @@ LOGIN_REDIRECT_URL = 'index'
 LOGOUT_REDIRECT_URL = 'login'
 LOGIN_URL = 'login'
 
+CLOUDINARY_CONFIG = {
+    'SECURE': True
+}
 
