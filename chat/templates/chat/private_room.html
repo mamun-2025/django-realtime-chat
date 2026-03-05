@@ -204,8 +204,9 @@
 
     // ২. প্রাথমিক ভেরিয়েবল সেটআপ
     const roomName = JSON.parse(document.getElementById('room-name').textContent);
-    // নোট: আপনার Django view থেকে room.room_id পাস করা থাকতে হবে
-    const chatSocket = new WebSocket('ws://' + window.location.host + '/ws/chat/private/' + "{{ room.room_id }}" + '/');
+    // প্রোটোকল চেক করে ws বা wss সেট করা
+    const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
+    const chatSocket = new WebSocket(`${ws_scheme}://${window.location.host}/ws/chat/${roomName}/`);
     const messageInputDom = document.querySelector('#chat-message-input');
     const typingDiv = document.querySelector('#typing-indicator');
     const chatLog = document.querySelector('#chat-log');
