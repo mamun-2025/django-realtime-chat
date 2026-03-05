@@ -5,48 +5,40 @@ import dj_database_url
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
+from pathlib import Path
 
+# ১. এনভায়রনমেন্ট ভেরিয়েবল সেটআপ
 env = environ.Env(
-   DEBUG = (bool, False)
+    DEBUG=(bool, False)
 )
 
-from pathlib import Path
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
-
+# ২. সিকিউরিটি সেটিংস
 SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG')
-
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
-
-# CSRF Trusted Origins কনফিগারেশন
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
 
-
-# Application definition
-
+# ৩. অ্যাপ্লিকেশন ডেফিনিশন
 INSTALLED_APPS = [
+    'daphne',           # ১ নম্বরে থাকবে (WebSocket এর জন্য জরুরি)
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'cloudinary_storage',
+    'cloudinary_storage', # staticfiles এর উপরে থাকতে হবে
     'django.contrib.staticfiles',
     'cloudinary',
-    'daphne',
     'chat',
     'channels',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # ঠিক SecurityMiddleware এর নিচে
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -72,42 +64,21 @@ TEMPLATES = [
     },
 ]
 
+# ৪. সার্ভার অ্যাপ্লিকেশন (ASGI সবার আগে)
 WSGI_APPLICATION = 'core.wsgi.application'
 ASGI_APPLICATION = 'core.asgi.application'
 
-# Upstash Redis for Production
+# ৫. চ্যানেল লেয়ার (Redis)
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [env('REDIS_URL')], # Upstash URL
+            "hosts": [env('REDIS_URL')],
         },
     },
 }
 
-
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': env('DB_NAME'),
-#         'USER': env('DB_USER'),
-#         'PASSWORD': env('DB_PASSWORD'),
-#         'HOST': env('DB_HOST'),
-#         'PORT': env('DB_PORT'),
-#     }
-# }
-
-# Neon PostgreSQL Database Configuration
+# ৬. ডাটাবেস (Neon/Postgres)
 DATABASES = {
    'default': dj_database_url.config(
       default=env('DATABASE_URL'),
@@ -115,69 +86,47 @@ DATABASES = {
    )
 }
 
-
-# Password validation
-# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
-
+# ৭. পাসওয়ার্ড ভ্যালিডেশন
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-
-# Internationalization
-# https://docs.djangoproject.com/en/6.0/topics/i18n/
-
+# ৮. ল্যাঙ্গুয়েজ এবং টাইম
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
-
-# Static files (Whitenoise)
-STATIC_URL = 'static/'
+# ৯. স্ট্যাটিক এবং মিডিয়া ফাইল (Cloudinary ও Whitenoise ফিক্স)
+STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Cloudinary Storage for Media (Images, Audio)
+# অ্যাডমিন প্যানেলের CSS ঠিক করার জন্য
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+
+# Cloudinary সেটিংস
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': env('CLOUDINARY_CLOUD_NAME'),
     'API_KEY': env('CLOUDINARY_API_KEY'),
     'API_SECRET': env('CLOUDINARY_API_SECRET'),
 }
 
+# মিডিয়া ফাইল আপলোডের জন্য ক্লাউডিনারি
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-
 MEDIA_URL = '/media/'
 
-
-LOGIN_REDIRECT_URL = 'index'
-LOGOUT_REDIRECT_URL = 'login'
-LOGIN_URL = 'login'
-
-CLOUDINARY_CONFIG = {
-    'SECURE': True
-}
-
+# ১০. অতিরিক্ত ক্লাউডিনারি কনফিগারেশন
 cloudinary.config(
     cloud_name = env('CLOUDINARY_CLOUD_NAME'),
     api_key = env('CLOUDINARY_API_KEY'),
     api_secret = env('CLOUDINARY_API_SECRET'),
     secure = True
 )
+
+# ১১. লগইন/লগআউট রিডাইরেক্ট
+LOGIN_REDIRECT_URL = 'index'
+LOGOUT_REDIRECT_URL = 'login'
+LOGIN_URL = 'login'
