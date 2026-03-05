@@ -1,62 +1,164 @@
 
-
 {% extends 'chat/base.html' %}
 {% block title %}Room: {{ room_name }}{% endblock %}
 
 {% block extra_css %}
-    #chat-log { height:450px; overflow-y: auto; border: 1px solid #ddd; padding: 15px; background-color: #fcfcfc; display: flex; flex-direction: column; gap: 10px; border-radius: 8px; }
-    .message { padding: 8px 12px; background: #fff; border-radius: 5px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); width: fit-content; max-width: 85%; word-wrap: break-word; }
+<style>
+    /* মেইন বডি সেটআপ */
+    body { background-color: #1a3967; margin: 0; font-family: sans-serif; }
 
-    .message.me { align-self: flex-end; background-color: #81000f; border-bottom-right-radius: 2px; color: white; }
-    .message.me .username { color: #e0e0e0; }
-    .message.me .content { color: white; }
-
-    .message.other { align-self: flex-start; background-color: #050027; border-bottom-left-radius: 2px; color: white; }
-    .message.other .username { color: #ffe0e0; }
-    .message.other .content { color: white; }
-
-    .tick { font-size: 0.9em; margin-left: 5px; color: #aaa; }
-    
-    .username { font-weight: bold; display: block; font-size: 0.85em; }
-    .timestamp { font-size: 0.7em; display: block; margin-top: 5px; opacity: 0.8; text-align: right; }
-
-    .search-container { position: relative; margin-bottom: 15px; }
-    #chat-search-input { width: 100%; padding: 10px 15px; border-radius: 20px; border: 1px; solid: #ddd; outline: none; }
-    #search-results-dropdown {
-        display: none; position: absolute; top: 45px; left: 0; right: 0;
-        background: white; border: 1px solid #ddd; border-radius: 8px;
-        max-height: 250px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        max-width: 1200px; /* স্ক্রিন অনেক বড় হলেও চ্যাট বক্স সুন্দর থাকবে */
+        margin: 0 auto;
+        background: white;
+        box-shadow: 0 0 10px rgba(255, 1, 1, 0.1);
+        overflow: hidden;
     }
-    .search-result-item { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s; }
-    .search-result-item:hover { background: #f9f9f9; }
-    .search-result-item small { color: #888; display: block; margin-top: 3px; }
+
+    /* হেডার স্টাইল */
+    .chat-header {
+        padding: 15px 20px;
+        background: #00a04d;
+        border-bottom: 2px solid #3100f5;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* অনলাইন ইউজার বার */
+    .online-status-bar {
+        background: #9a9a95;
+        padding: 8px 20px;
+        border-bottom: 1px solid #0c5e7f;
+        font-size: 14px;
+    }
+    #online-users-list { display: flex; gap: 10px; list-style: none; padding: 0; margin: 0; }
+    #online-users-list li { background: #000d16; padding: 2px 10px; border-radius: 12px; color: #40ff00; font-weight: bold; font-size: 14px;border: 1px solid #06365e; }
+
+    /* চ্যাট লগ এরিয়া */
+    #chat-log {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        padding: 20px;
+        background-color: #00695c; /* আপনার স্ক্রিনশটের সেই ডার্ক গ্রিন ব্যাকগ্রাউন্ড */
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    /* মেসেজ বাবল ডিজাইন (প্রধান ফিক্স) */
+    .message {
+        padding: 10px 14px;
+        border-radius: 18px;
+        max-width: 60%; /* বাবল যাতে বেশি চওড়া না হয় */
+        width: fit-content; /* কন্টেন্ট অনুযায়ী চওড়া হবে */
+        position: relative;
+        clear: both;
+        box-shadow: 0 2px 4px rgba(255, 4, 4, 0.96);
+    }
+
+    /* আমার পাঠানো মেসেজ (বানে) */
+    .message.me {
+        align-self: flex-end;
+        background-color: #e53944; /* আপনার সেই লাল কালার */
+        color: white;
+        border-bottom-right-radius: 2px;
+    }
+
+    /* অন্যের পাঠানো মেসেজ (বামে) */
+    .message.other {
+        align-self: flex-start;
+        background-color: #31e355; /* আপনার সেই ডার্ক ব্লু কালার */
+        color: white;
+        border-bottom-left-radius: 2px;
+    }
+
+    .username-label { font-weight: bold; font-size: 13px; display: block; margin-bottom: 5px; color: #000000; }
+    .timestamp { font-size: 11px; display: block; margin-top: 5px; opacity: 0.8; text-align: right; }
+
+    /* ইমেজ এবং অডিও সাইজ ফিক্স */
+    .message img {
+        max-width: 100%;
+        max-height: 250px;
+        border-radius: 8px;
+        margin: 5px;
+        object-fit: contain;
+       
+    }
+    .message audio {
+        max-width: 250px; /* অডিও প্লেয়ার ছোট রাখার জন্য */
+        height: 40px;
+    }
+
+    /* ইনপুট এরিয়া ফিক্স */
+    .chat-input-area {
+        flex-shirnk: 0;
+        padding: 10px 20px;
+        background: white;
+        border-top: 1px solid #ada9b1;
+    }
+    .input-wrapper {
+        display: flex;
+        align-items: center;
+        background: #001435;
+        border-radius: 30px;
+        padding: 5px 15px;
+        gap: 10px;
+    }
+    #chat-message-input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        padding: 10px;
+        outline: none;
+        color: white;
+    }
+    #chat-message-submit {
+        background: #27ae60;
+        color: white;
+        border: none;
+        padding: 8px 18px;
+        border-radius: 20px;
+        cursor: pointer;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-    <h2>Room: {{ room_name }}</h2>
-    <div class="search-container">
-        <input type="text" id="chat-search-input" placeholder="🔍 Search messages in this chat...">
-        <div id="search-results-dropdown"></div>
+<div class="chat-container">
+    <div class="chat-header">
+        <h4 style="margin:0;">🌐 Room: {{ room_name }}</h4>
+        <div style="position: relative;">
+            <input type="text" id="chat-search-input" placeholder="🔍 Search..." 
+                   style="padding: 5px 15px; border-radius: 20px; border: 1px solid #ddd;">
+            <div id="search-results-dropdown" style="display:none; position:absolute; top:35px; right:0; background:white; width:250px; border:1px solid #ddd; z-index:100; max-height:200px; overflow-y:auto; border-radius:8px;"></div>
+        </div>
+    </div>
+
+    <div class="online-status-bar">
+        <strong>Online: </strong>
+        <ul id="online-users-list" style="display: inline-flex;"></ul>
+        <span id="typing-indicator" style="margin-left: 10px; font-style: italic; color: #ffffff;"></span>
     </div>
 
     <div id="chat-log">
         {% for msg in messages %}
-            <div class="message {% if msg.user == request.user or msg.sender == request.user %}me{% else %}other{% endif %}">
-                <span class="username">{{ msg.user.username }}</span>
-
+            <div class="message {% if msg.user == request.user %}me{% else %}other{% endif %}">
+                <span class="username-label">{{ msg.user.username }}</span>
+                
                 {% if msg.image %}
-                    <img src="{{ msg.image.url }}" style="max-width: 250px; border-radius: 10px; margin: 10px 0; display: block; cursor: pointer;" onclick="window.open('{{ msg.image.url }}')">
+                    <img src="{{ msg.image.url }}" onclick="window.open('{{ msg.image.url }}')">
                 {% endif %}
 
                 {% if msg.content %}
-                <span class="content">{{ msg.content|urlize }}</span>
+                    <div class="content">{{ msg.content|urlize }}</div>
                 {% endif %}
 
                 {% if msg.audio %}
-                    <audio controls sytle="max-width: 100%; margin-top: 5px; display: block;">
-                        <source src="{{ msg.audio.url }}" type="audio/wav">
-                        Your browser does not support the audio element.
-                    </audio>
+                    <audio controls><source src="{{ msg.audio.url }}" type="audio/wav"></audio>
                 {% endif %}
                 
                 <span class="timestamp">{{ msg.timestamp|date:"h:i A" }}</span>
@@ -64,117 +166,92 @@
         {% endfor %}
     </div>
 
-    <div id="online-users-container" style="margin-bottom: 10px; padding: 10px; background: #eef; border-radius: 8px;">
-        <div id="typing-indicator" style="font-size: 0.8em; color: gray; height: 20px; margin-left: 10px;"></div>
-        <strong>Online Users:</strong>
-        <ul id="online-users-list" style="display: flex; gap: 10px; list-style: none; padding: 0; margin-top: 5px;"></ul>
-    </div>
-
-    <br>
-
-    <div class="chat-input-wrapper" style="position: sticky; bottom: 0; background: white; padding: 10px;">
-        <div class="chat-input-container" style="display: flex; gap: 10px; align-items: center; background: #f1f1f1; padding: 5px 15px; border-radius: 30px;">
-        
+    <div class="chat-input-area">
+        <div id="recording-status" style="display: none; color: red; font-size: 12px; margin-bottom: 5px;">🔴 Recording...</div>
+        <div class="input-wrapper">
             <input type="file" id="chat-file-input" style="display: none;" accept="image/*">
-            <label for="chat-file-input" style="cursor: pointer; font-size: 1.5rem; margin: 0; color: #666; display: flex; align-items: center;">📷</label>
-
-            <button id="record-btn" type="button" style="background: none; border: none; cursor: pointer; font-size: 1.5rem; padding: 0; color: #666; display: flex; align-items: center;">🎤</button>
-
-            <input id="chat-message-input" type="text" style="flex-grow: 1; border: none; padding: 10px; border-radius: 30px; outline: none; background: transparent;" placeholder="Type message...">
+            <label for="chat-file-input" style="cursor: pointer; font-size: 20px;">📷</label>
+            <button id="record-btn" style="background:none; border:none; cursor:pointer; font-size: 20px;">🎤</button>
             
-            <button id="chat-message-submit" type="button" class="btn btn-success" style="border-radius: 20px; padding: 5px 20px; background-color: #27ae60; color: white; border: none;">Send</button>
+            <input id="chat-message-input" type="text" placeholder="Type a message..." autocomplete="off">
+            <button id="chat-message-submit">Send</button>
         </div>
-    
-        <div id="recording-status" style="display: none; color: red; font-size: 0.8rem; margin-left: 55px; font-weight: bold; margin-top: 5px;">
-            🔴 Recording...
-        </div>
-
     </div>
+</div>
 
-    <div style="height: 100px;"></div>
-
-    {{ room_name|json_script:"room-name" }}
-
-
-
-
+{{ room_name|json_script:"room-name" }}
 
 <script>
+    // ১. টেক্সটের ভেতর লিঙ্ক থাকলে তা ক্লিকেবল করার ফাংশন
     function urlify(text) {
         if (!text) return "";
-        var urlRegex = /(https?:\/\/[^\s]+)/g;
-        return text.replace(urlRegex, function(url) {
-            return '<a href="' + url + '" target="_blank" style="color: #5887ff; text-decoration: underline;">' + url + '</a>';
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        return text.replace(urlRegex, (url) => {
+            return `<a href="${url}" target="_blank" style="color: #5887ff; text-decoration: underline;">${url}</a>`;
         });
     }
 
+    // ২. প্রাথমিক ভেরিয়েবল সেটআপ
     const roomName = JSON.parse(document.getElementById('room-name').textContent);
-    const chatSocket = new WebSocket('ws://' + window.location.host + '/ws/chat/' + roomName + '/');
+    const chatSocket = new WebSocket(`ws://${window.location.host}/ws/chat/${roomName}/`);
     const messageInputDom = document.querySelector('#chat-message-input');
     const typingDiv = document.querySelector('#typing-indicator');
+    const chatLog = document.querySelector('#chat-log');
+    const currentUser = "{{ request.user.username }}";
 
+    // ৩. সকেট থেকে মেসেজ আসলে যা হবে
     chatSocket.onmessage = function(e) {
         const data = JSON.parse(e.data);
-        const currentUser = "{{ request.user.username }}";
 
+        // টাইপিং ইন্ডিকেটর হ্যান্ডেল করা
         if (data.type === 'typing' && data.username !== currentUser) {
-            typingDiv.innerText = data.username + ' is typing...';
+            typingDiv.innerText = `${data.username} is typing...`;
             if (window.typingTimer) clearTimeout(window.typingTimer);
             window.typingTimer = setTimeout(() => { typingDiv.innerText = ''; }, 2000);
             return;
         }
 
+        // অনলাইন ইউজার লিস্ট আপডেট
         if (data.type === 'user_list') {
             const listElement = document.querySelector('#online-users-list');
             if (listElement) {
-                listElement.innerHTML = ''; 
-                data.users.forEach(user => {
-                    const li = document.createElement('li');
-                    li.style.cssText = "background: #d4edda; padding: 2px 8px; border-radius: 15px; font-size: 0.8em; border: 1px solid #c3e6cb;";
-                    li.innerHTML = `● ${user}`;
-                    listElement.appendChild(li);
-                });
+                listElement.innerHTML = data.users.map(user => 
+                    `<li style="background: #d4edda; padding: 2px 8px; border-radius: 15px; font-size: 0.8em; border: 1px solid #c3e6cb;">● ${user}</li>`
+                ).join('');
             }
-            return; 
+            return;
         }
-        
+
+        // নতুন মেসেজ রেন্ডারিং
         if (data.type === 'chat_message') {
-            const chatLog = document.querySelector('#chat-log');
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${data.username === currentUser ? 'me' : 'other'}`;
             messageDiv.id = `msg-${data.message_id}`;
 
-            let contentHTML = `<span class="username">${data.username}</span>`;
+            let contentHTML = `<span class="username-label">${data.username}</span>`;
 
             if (data.image_url) {
-                contentHTML += `<img src="${data.image_url}" style="max-width: 250px; border-radius: 10px; margin: 10px 0; display: block; cursor:pointer;" onclick="window.open('${data.image_url}')">`;
-            } 
-            
-            // অডিও রেন্ডারিং
-            if (data.audio_url) {
-                contentHTML += 
-                `<audio controls style="max-width: 100%; margin-top: 5px; display: block;">
-                    <source src="${data.audio_url}" type="audio/wav">
-                    Your browser does not support the audio element.
-                </audio>`;
-            }
-            
-            if (data.message) {
-                contentHTML += `<span class="content">${urlify(data.message)}</span>`;
+                contentHTML += `<img src="${data.image_url}" style="max-width: 100%; border-radius: 10px; margin: 10px 0; display: block; cursor:pointer;" onclick="window.open('${data.image_url}')">`;
             }
 
-            contentHTML += `
-                <span class="timestamp">
-                    ${data.timestamp}
-                    <span class="tick" id="tick-${data.message_id}">
-                        ${data.username === currentUser ? (data.is_read ? '✓✓' : '✓') : ''}
-                    </span>
-                </span>`;
+            if (data.audio_url) {
+                contentHTML += `<audio controls style="width: 200px; height: 35px; margin-top: 5px; display: block;"><source src="${data.audio_url}" type="audio/wav"></audio>`;
+            }
+
+            if (data.message) {
+                contentHTML += `<div class="content">${urlify(data.message)}</div>`;
+            }
+
+            // ব্লু টিক বা সিঙ্গেল টিক লজিক
+            const tick = data.username === currentUser ? `<span class="tick" id="tick-${data.message_id}">${data.is_read ? '✓✓' : '✓'}</span>` : '';
             
+            contentHTML += `<span class="timestamp">${data.timestamp} ${tick}</span>`;
+
             messageDiv.innerHTML = contentHTML;
             chatLog.appendChild(messageDiv);
-            chatLog.scrollTop = chatLog.scrollHeight;
+            chatLog.scrollTop = chatLog.scrollHeight; // অটো স্ক্রল ডাউন
 
+            // মেসেজ সিন (Read Receipt) পাঠানো
             if (data.username !== currentUser && data.message_id) {
                 chatSocket.send(JSON.stringify({
                     'type': 'message_read',
@@ -182,56 +259,55 @@
                 }));
             }
         }
-        
+
+        // সিন হয়ে গেলে টিক কালার নীল করা
         if (data.type === 'message_read') {
             const tickElement = document.querySelector(`#tick-${data.message_id}`);
             if (tickElement) {
-                tickElement.innerHTML = '✓✓'; 
-                tickElement.style.color = '#3498db'; 
+                tickElement.innerHTML = '✓✓';
+                tickElement.style.color = '#3498db';
             }
         }
     };
 
-    chatSocket.onclose = function(e) {
-        console.error('Chat socket closed unexpectedly');
-    };
+    chatSocket.onclose = (e) => console.error('Chat socket closed unexpectedly');
 
+    // ৪. টেক্সট মেসেজ পাঠানো
     messageInputDom.focus();
     messageInputDom.onkeyup = function(e) {
         if (e.keyCode === 13) {
             document.querySelector('#chat-message-submit').click();
-        } else {
-            if (chatSocket.readyState === WebSocket.OPEN) {
+        } else if (chatSocket.readyState === WebSocket.OPEN) {
             chatSocket.send(JSON.stringify({ 'type': 'typing' }));
-             }
         }
-    }
+    };
 
-    document.querySelector('#chat-message-submit').onclick = function(e){
-        const message = messageInputDom.value;
-        if (message.trim() !== ""){
-            chatSocket.send(JSON.stringify({'message': message}));
+    document.querySelector('#chat-message-submit').onclick = function() {
+        const message = messageInputDom.value.trim();
+        if (message !== "") {
+            chatSocket.send(JSON.stringify({ 'message': message }));
             messageInputDom.value = '';
         }
     };
 
+    // ৫. ইমেজ/ফাইল পাঠানো
     const fileInput = document.querySelector('#chat-file-input');
-    fileInput.onchange = function(e) {
+    fileInput.onchange = function() {
         const file = fileInput.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = function(event) {
+        reader.onload = (e) => {
             chatSocket.send(JSON.stringify({
                 'type': 'file',
-                'file_data': event.target.result,
+                'file_data': e.target.result,
                 'file_name': file.name
             }));
         };
         reader.readAsDataURL(file);
-        fileInput.value = ''; 
+        fileInput.value = '';
     };
 
-    // অডিও রেকর্ডিং লজিক (সংশোধিত)
+    // ৬. অডিও রেকর্ডিং (ফিক্সড লজিক)
     let mediaRecorder;
     let audioChunks = [];
     const recordBtn = document.getElementById('record-btn');
@@ -245,34 +321,28 @@
                 audioChunks = [];
 
                 mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
-                
 
-                // রেকর্ডিং শেষ হলে ডাটা পাঠানোর লজিক
                 mediaRecorder.onstop = () => {
                     const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
                     const reader = new FileReader();
                     reader.readAsDataURL(audioBlob);
-                    
-                    reader.onloadend = () => {  
-                        const base64audio = reader.result;
-                        if (chatSocket.readyState === WebSocket.OPEN){
-                         chatSocket.send(JSON.stringify({
-                            'type': 'audio',
-                            'file_data': base64audio,
-                         }));
-                    } else {
-                        console.error("WebSocket is not open. State: " + chatSocket.readyState);
-                    }
+                    reader.onloadend = () => {
+                        if (chatSocket.readyState === WebSocket.OPEN) {
+                            chatSocket.send(JSON.stringify({
+                                'type': 'audio',
+                                'file_data': reader.result,
+                            }));
+                        }
+                    };
+                    // স্ট্রিম বন্ধ করা (মাইক্রোফোন অফ করা)
+                    stream.getTracks().forEach(track => track.stop());
                 };
-
-                 stream.getTracks().forEach(track => track.stop());
-            };
 
                 mediaRecorder.start();
                 recordBtn.innerHTML = "🛑";
                 if (statusText) statusText.style.display = "block";
             } catch (err) {
-                alert("Microphone access denied or not available!");
+                alert("Microphone access denied!");
             }
         } else {
             mediaRecorder.stop();
@@ -280,45 +350,28 @@
             if (statusText) statusText.style.display = "none";
         }
     };
-    
+
+    // ৭. মেসেজ সার্চ লজিক
     const searchInput = document.getElementById('chat-search-input');
     const resultsDropdown = document.getElementById('search-results-dropdown');
 
     searchInput.addEventListener('input', function() {
         const query = this.value.trim();
-        const roomId = roomName;
-
         if (query.length > 2) {
-            fetch(`/chat/search/${roomId}/?q=${query}`)
-                .then(response => response.json())
+            fetch(`/chat/search/${roomName}/?q=${query}`)
+                .then(res => res.json())
                 .then(data => {
-                    resultsDropdown.innerHTML = '';
-                    if (data.results.length > 0) {
-                        resultsDropdown.style.display = 'block';
-                        data.results.forEach(msg => {
-                            const item = document.createElement('div');
-                            item.className = 'search-result-item';
-                            item.innerHTML = `
-                                <strong>${msg.sender}</strong>: ${msg.content}
-                                <small>${msg.timestamp}</small>
-                                `;
-                                resultsDropdown.appendChild(item);
-                        });
-                    } else {
-                        resultsDropdown.innerHTML = '<div style="padding:10px; color:#999;">NO results found</div>';
-                        resultsDropdown.style.display = 'block';
-                    }
+                    resultsDropdown.innerHTML = data.results.length ? data.results.map(msg => `
+                        <div class="search-result-item" style="padding:10px; border-bottom:1px solid #eee; cursor:pointer;">
+                            <strong>${msg.sender}</strong>: ${msg.content}
+                            <small style="display:block; color:#888;">${msg.timestamp}</small>
+                        </div>
+                    `).join('') : '<div style="padding:10px; color:#999;">No results found</div>';
+                    resultsDropdown.style.display = 'block';
                 });
         } else {
             resultsDropdown.style.display = 'none';
         }
     });
-
-    document.addEventListener('click', function(e) {
-        if (!searchInput.contains(e.target) && !resultsDropdown.contains(e.target)) {
-            resultsDropdown.style.display = 'none';
-        }
-    });
-
 </script>
 {% endblock %}

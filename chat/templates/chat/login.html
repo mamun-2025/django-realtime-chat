@@ -6,26 +6,86 @@
 
 {% block extra_css %}
 <style>
-    .auth-box { width: 350px; margin: 50px auto; padding: 30px; border: 1px solid #ddd; border-radius: 12px; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-    .auth-box h2 { text-align: center; color: #2980b9; margin-top: 0; }
-    .auth-box form p { margin-bottom: 15px; display: flex; flex-direction: column; }
-    .auth-box input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-top: 5px; }
-    .auth-box button { width: 100%; padding: 12px; background: #2980b9; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; }
-    .auth-link { text-align: center; margin-top: 20px; font-size: 0.95em; }
+    /* পুরো স্ক্রিনকে মাঝখানে আনার জন্য */
+    body {
+        background-color: #f0f2f5; /* হালকা ব্যাকগ্রাউন্ড */
+        margin: 0;
+    }
+    
+    .auth-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: calc(100vh - 100px); /* হেডার বাদ দিয়ে বাকি অংশ */
+        background-color: #00695c; /* আপনার থিমের সেই ডার্ক গ্রিন কালার */
+    }
+
+    .auth-box { 
+        width: 100%;
+        max-width: 380px; 
+        padding: 40px; 
+        border-radius: 15px; 
+        background: #fff; 
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
+    }
+
+    .auth-box h2 { 
+        text-align: center; 
+        color: #2980b9; 
+        margin-bottom: 25px; 
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* ফর্ম ইনপুটগুলোর সুন্দর স্টাইল */
+    .auth-box form p { 
+        margin-bottom: 20px; 
+        display: flex; 
+        flex-direction: column; 
+        color: #333;
+    }
+
+    .auth-box input { 
+        padding: 12px; 
+        border: 1px solid #ddd; 
+        border-radius: 8px; 
+        margin-top: 8px; 
+        font-size: 14px;
+    }
+
+    .auth-box button { 
+        width: 100%; 
+        padding: 12px; 
+        background: #2980b9; 
+        color: white; 
+        border: none; 
+        border-radius: 8px; 
+        cursor: pointer; 
+        font-size: 16px; 
+        font-weight: bold; 
+        transition: background 0.3s;
+    }
+
+    .auth-box button:hover { background: #2471a3; }
+
+    .auth-link { text-align: center; margin-top: 25px; font-size: 0.9em; color: #666; }
+    .auth-link a { color: #2980b9; text-decoration: none; font-weight: bold; }
+    
     .errorlist { color: #e74c3c; font-size: 0.85em; list-style: none; padding: 0; margin-bottom: 10px; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="auth-box">
-    <h2>Login</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Login</button>
-    </form>
-    <div class="auth-link">
-        New here? <a href="{% url 'signup' %}">Create an account</a>
+<div class="auth-wrapper">
+    <div class="auth-box">
+        <h2>Login</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Login</button>
+        </form>
+        <div class="auth-link">
+            New here? <a href="{% url 'signup' %}">Create an account</a>
+        </div>
     </div>
 </div>
 {% endblock %}

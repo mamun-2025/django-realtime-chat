@@ -1,17 +1,62 @@
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}ChatApp{% endblock %}</title>
+
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f2f5; margin: 0; }
-        .navbar { background: #2c3e50; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .navbar a { color: white; text-decoration: none; font-weight: bold; }
-        .main-container { max-width: 1000px; margin: 30px auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        .logout-btn { background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
-        {% block extra_css %}{% endblock %}
+        body {
+            font-family: 'Segoe UI' Roboto, Helvetica, Arial, sans-serif; 
+            background-color: #006f64; 
+            margin: 0; 
+            padding: 0; 
+            height: 100vh; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar {
+            background: #004182;
+            color: white;
+            padding: 12px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .main-wrapper {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logout-btn {
+            background: #000000;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #007c83;
+        }
+        {% block extra_css %}
+        {% endblock %}
     </style>
 </head>
 <body>
@@ -19,8 +64,8 @@
         <a href="{% url 'index' %}">🚀 ChatEngine</a>
         <div>
             {% if user.is_authenticated %}
-                <span>Welcome, <strong>{{ user.username }}</strong></span>
-                <form action="{% url 'logout' %}" method="post" style="display:inline; margin-left: 15px;">
+                <span style="font-size: 0.9em;">Welcome, <strong>{{ user.username }}</strong></span>
+                <form action="{% url 'logout' %}" method="post" style="display: inline; margin-left: 15px;">
                     {% csrf_token %}
                     <button type="submit" class="logout-btn">Logout</button>
                 </form>
@@ -28,8 +73,8 @@
         </div>
     </nav>
 
-    <div class="main-container">
-        {% block content %}{% endblock %}
+    <div class="main-wrapper">
+        {% block content%}{% endblock %}
     </div>
 </body>
 </html>

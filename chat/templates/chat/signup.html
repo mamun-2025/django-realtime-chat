@@ -6,25 +6,80 @@
 
 {% block extra_css %}
 <style>
-    .auth-box { width: 350px; margin: 50px auto; padding: 30px; border: 1px solid #ddd; border-radius: 12px; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-    .auth-box h2 { text-align: center; color: #27ae60; margin-top: 0; }
-    .auth-box form p { margin-bottom: 15px; display: flex; flex-direction: column; }
-    .auth-box input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-top: 5px; }
-    .auth-box button { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; }
+    body { margin: 0; }
+    
+    .auth-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: calc(100vh - 100px);
+        background-color: #00695c; /* ডার্ক গ্রিন ব্যাকগ্রাউন্ড */
+    }
+
+    .auth-box { 
+        width: 100%;
+        max-width: 400px; 
+        padding: 35px; 
+        border-radius: 15px; 
+        background: #fff; 
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
+    }
+
+    .auth-box h2 { 
+        text-align: center; 
+        color: #ff124d; 
+        padding-top: 15px;
+        font-size: 1.8em;
+        border-bottom: 3px solid #00ba76;
+    }
+
+    .auth-box form p { 
+        margin-bottom: 15px; 
+        display: flex; 
+        flex-direction: column; 
+        color: #444;
+        font-size: 0.9em;
+    }
+
+    .auth-box input { 
+        padding: 10px; 
+        border: 1px solid #ddd; 
+        border-radius: 6px; 
+        margin-top: 5px; 
+    }
+
+    /* হেল্প টেক্সট ছোট করার জন্য (Django default help text) */
+    .helptext { font-size: 0.75em; color: #888; margin-top: 4px; }
+
+    .auth-box button { 
+        width: 100%; 
+        padding: 12px; 
+        background: #040040; 
+        color: white; 
+        border: none; 
+        border-radius: 8px; 
+        cursor: pointer; 
+        font-size: 16px; 
+        font-weight: bold; 
+    }
+
     .auth-link { text-align: center; margin-top: 20px; font-size: 0.95em; }
+    .auth-link a { color: #27ae60; text-decoration: none; font-weight: bold; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="auth-box">
-    <h2>Create Account</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }} 
-        <button type="submit">Register</button>
-    </form>
-    <div class="auth-link">
-        Already have an account? <a href="{% url 'login' %}">Login here</a>
+<div class="auth-wrapper">
+    <div class="auth-box">
+        <h2>Create Account</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }} 
+            <button type="submit">Register</button>
+        </form>
+        <div class="auth-link">
+            Already have an account? <a href="{% url 'login' %}">Login here</a>
+        </div>
     </div>
 </div>
 {% endblock %}

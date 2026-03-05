@@ -83,11 +83,29 @@ def private_chat_view(request, target_user_id):
    target_user = get_object_or_404(User, id=target_user_id)
    room = get_or_create_private_room(request.user, target_user)
 
+   all_users = User.objects.exclude(id=request.user.id)
+
    messages = room.private_messages.all().order_by('timestamp')[:50]
 
    return render(request, 'chat/private_room.html', {
       'room': room,
       'target_user': target_user,
       'messages': messages,
+      'all_users': all_users,
       'room_name': room.room_id
    })
+
+
+# @login_required
+# def private_chat_view(request, target_user_id):
+#    target_user = get_object_or_404(User, id=target_user_id)
+#    room = get_or_create_private_room(request.user, target_user)
+
+#    messages = room.private_messages.all().order_by('timestamp')[:50]
+
+#    return render(request, 'chat/private_room.html', {
+#       'room': room,
+#       'target_user': target_user,
+#       'messages': messages,
+#       'room_name': room.room_id
+#    })
